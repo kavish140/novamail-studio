@@ -91,18 +91,88 @@ const response = await fetch('${apiUrl}', {
     html: '<strong>It works!</strong>'
   })
 });`,
-  python: `from novamail import NovaMail
-import os
+  python: `import requests
 
-nova = NovaMail(
-    api_key=os.environ["NOVAMAIL_API_KEY"],
-    base_url="${apiUrl.replace('/send-email', '')}"
+url = "${apiUrl}"
+headers = {
+    "Authorization": "Bearer nm_live_••••••••",
+    "Content-Type": "application/json"
+}
+data = {
+    "from": "hello@sitenova.dev",
+    "to": "ada@lovelace.dev",
+    "subject": "Hello from NovaMail",
+    "html": "<strong>It works!</strong>"
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.json())`,
+  php: `<?php
+$ch = curl_init('${apiUrl}');
+$data = json_encode([
+    'from' => 'hello@sitenova.dev',
+    'to' => 'ada@lovelace.dev',
+    'subject' => 'Hello from NovaMail',
+    'html' => '<strong>It works!</strong>'
+]);
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer nm_live_••••••••',
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+?>`,
+  go: `package main
+
+import (
+	"bytes"
+	"fmt"
+	"net/http"
 )
 
-nova.emails.send(
-    from_="you@yourdomain.com",
-    to="ada@lovelace.dev",
-    subject="Welcome aboard",
-    html="<h1>Hello, Ada</h1>",
-)`
+func main() {
+	url := "${apiUrl}"
+	var jsonData = []byte(\`{
+		"from": "hello@sitenova.dev",
+		"to": "ada@lovelace.dev",
+		"subject": "Hello from NovaMail",
+		"html": "<strong>It works!</strong>"
+	}\`)
+
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer nm_live_••••••••")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+
+	fmt.Println(resp.Status)
+}`,
+  ruby: `require 'uri'
+require 'net/http'
+require 'json'
+
+uri = URI('${apiUrl}')
+req = Net::HTTP::Post.new(uri)
+req['Authorization'] = 'Bearer nm_live_••••••••'
+req['Content-Type'] = 'application/json'
+
+req.body = {
+  from: 'hello@sitenova.dev',
+  to: 'ada@lovelace.dev',
+  subject: 'Hello from NovaMail',
+  html: '<strong>It works!</strong>'
+}.to_json
+
+res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+  http.request(req)
+end
+
+puts res.body`
 });
