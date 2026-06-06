@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
+import { SocialButtons, Divider } from "@/components/nova/social-buttons";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -40,6 +41,8 @@ function SignupPage() {
       footer={<>Already have an account?{" "}<Link to="/login" className="text-foreground underline-offset-4 hover:underline">Sign in</Link></>}
     >
       <form onSubmit={onSubmit} className="space-y-4">
+        <SocialButtons />
+        <Divider />
         <div>
           <Label htmlFor="name" className="mb-1.5 block text-sm">Full name</Label>
           <Input id="name" placeholder="Ada Lovelace" className="bg-surface/60" required />
