@@ -38,6 +38,11 @@ function Landing() {
 }
 
 function Hero() {
+  const apiUrl = import.meta.env.VITE_SUPABASE_URL 
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`
+    : "https://api.novamail.app/v1/send-email";
+  const snippets = getCodeSnippets(apiUrl);
+
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-aurora" />
@@ -74,7 +79,7 @@ function Hero() {
 
         <div className="relative animate-fade-up [animation-delay:120ms]">
           <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-primary/30 via-accent/20 to-transparent blur-3xl" />
-          <CodeBlock filename="terminal" language="bash" code={codeSnippets.curl} className="glow" />
+          <CodeBlock filename="terminal" language="bash" code={snippets.curl} className="glow" />
           <div className="mt-4 grid grid-cols-3 gap-3">
             <MiniStat label="p50 latency" value="84ms" />
             <MiniStat label="Delivery" value="99.98%" />
