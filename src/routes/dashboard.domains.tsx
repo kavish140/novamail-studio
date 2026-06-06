@@ -125,12 +125,33 @@ function DomainsPage() {
   };
 
   const remove = async (id: string) => {
-    // Delete from DB. We can optionally also delete from Resend via an Edge Function, 
-    // but deleting from DB is sufficient to hide it from the user.
-    const { error } = await supabase.from('domains').delete().eq('id', id);
-    if (error) return toast.error(error.message);
-    toast.success("Domain removed");
-    refetch();
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) throw new Error("Not authenticated");
+
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL 
+        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
+        : "https://cbygqakkewlvsgswosza.supabase.co/functions/v1/domains";
+
+      const res = await fetch(`${baseUrl}?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY || ""
+        }
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete domain");
+      }
+
+      toast.success("Domain removed");
+      refetch();
+    } catch (err: any) {
+      console.error("Delete domain error:", err);
+      toast.error(err.message || "Failed to delete domain");
+    }
   };
 
   const copy = (t: string) => { navigator.clipboard.writeText(t); toast.success("Copied"); };

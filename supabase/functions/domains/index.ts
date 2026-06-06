@@ -112,6 +112,33 @@ serve(async (req) => {
       return new Response(JSON.stringify(updated), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (req.method === "DELETE") {
+      const url = new URL(req.url);
+      const id = url.searchParams.get("id");
+      if (!id) throw new Error("Missing domain ID");
+
+      const { data: domain } = await supabaseClient.from("domains").select("*").eq("id", id).single();
+      if (!domain) throw new Error("Domain not found");
+      if (domain.user_id !== user.id) throw new Error("Unauthorized");
+
+      // Delete from Resend
+      const delRes = await fetch(`https://api.resend.com/domains/${domain.resend_domain_id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+      });
+      if (!delRes.ok) {
+        const delData = await delRes.json();
+        console.error("Failed to delete from Resend:", delData);
+        // Continue to delete from our DB even if Resend fails, so the user isn't stuck
+      }
+
+      // Delete from Supabase
+      const { error } = await supabaseClient.from("domains").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+
+      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Handle GET requests to list domains
     if (req.method === "GET") {
       const { data, error } = await supabaseClient
