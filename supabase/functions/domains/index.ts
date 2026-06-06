@@ -77,19 +77,27 @@ serve(async (req) => {
       if (!domain) throw new Error("Domain not found");
       if (domain.user_id !== user.id) throw new Error("Unauthorized");
 
-      // Trigger Resend Verification
-      const verifyRes = await fetch(`https://api.resend.com/domains/${domain.resend_domain_id}/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-      });
-      const verifyData = await verifyRes.json();
-      if (!verifyRes.ok) throw new Error(verifyData.message || "Failed to verify domain");
-
-      // Fetch the current status from Resend
+      // Fetch the current status from Resend FIRST
       const getRes = await fetch(`https://api.resend.com/domains/${domain.resend_domain_id}`, {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       });
-      const getData = await getRes.json();
+      let getData = await getRes.json();
+
+      // Only trigger a new verification if it's not already verified
+      if (getData.status !== "verified") {
+        const verifyRes = await fetch(`https://api.resend.com/domains/${domain.resend_domain_id}/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok) throw new Error(verifyData.message || "Failed to verify domain");
+
+        // Fetch the status again after triggering
+        const getResAfter = await fetch(`https://api.resend.com/domains/${domain.resend_domain_id}`, {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+        });
+        getData = await getResAfter.json();
+      }
 
       // Update in Supabase
       const { data: updated, error } = await supabaseClient
