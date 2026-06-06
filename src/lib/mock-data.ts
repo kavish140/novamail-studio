@@ -71,24 +71,25 @@ export const getCodeSnippets = (apiUrl: string) => ({
   -H "Authorization: Bearer nm_live_••••••••" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "from": "hello@mail.sitenova.dev",
+    "from": "hello@sitenova.dev",
     "to": "ada@lovelace.dev",
-    "subject": "Welcome aboard",
-    "html": "<h1>Hello, Ada</h1>"
+    "subject": "Hello from NovaMail",
+    "html": "<strong>It works!</strong>"
   }'`,
-  node: `import { NovaMail } from "novamail";
+  node: `import fetch from 'node-fetch';
 
-// Ensure NOVAMAIL_API_KEY is set in your environment
-const nova = new NovaMail(process.env.NOVAMAIL_API_KEY);
-
-// Point to your dedicated endpoint
-nova.config.baseUrl = "${apiUrl.replace('/send-email', '')}";
-
-await nova.emails.send({
-  from: "hello@mail.sitenova.dev",
-  to: "ada@lovelace.dev",
-  subject: "Welcome aboard",
-  html: "<h1>Hello, Ada</h1>",
+const response = await fetch('${apiUrl}', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer nm_live_••••••••',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    from: 'hello@sitenova.dev',
+    to: 'ada@lovelace.dev',
+    subject: 'Hello from NovaMail',
+    html: '<strong>It works!</strong>'
+  })
 });`,
   python: `from novamail import NovaMail
 import os

@@ -55,8 +55,8 @@ serve(async (req) => {
     const fromDomain = from.split("@")[1];
 
     // 2. Verify the Domain belongs to the user and is verified
-    // We bypass this check if they are using the default global domain (mail.sitenova.dev)
-    if (fromDomain !== "mail.sitenova.dev") {
+    // We bypass this check if they are using the default global domain (sitenova.dev)
+    if (fromDomain !== "sitenova.dev") {
       const { data: domainData, error: domainError } = await supabaseClient
         .from("domains")
         .select("id, status")
