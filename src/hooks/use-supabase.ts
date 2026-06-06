@@ -70,7 +70,8 @@ export function useDomains() {
         name: row.name,
         status: row.status,
         region: row.region,
-        addedAt: new Date(row.added_at).toLocaleDateString()
+        addedAt: new Date(row.added_at).toLocaleDateString(),
+        records: row.records || []
       })) as Domain[];
     }
   });

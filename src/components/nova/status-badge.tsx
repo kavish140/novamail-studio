@@ -8,6 +8,8 @@ const styles: Record<string, string> = {
   failed: "bg-destructive/20 text-destructive border-destructive/40",
   verified: "bg-success/15 text-success border-success/30",
   pending: "bg-warning/15 text-warning border-warning/30",
+  not_started: "bg-warning/15 text-warning border-warning/30",
+  temporary_failure: "bg-destructive/15 text-destructive border-destructive/30",
   live: "bg-primary/15 text-foreground border-primary/40",
   test: "bg-muted text-muted-foreground border-border",
 };
@@ -21,7 +23,7 @@ export function StatusBadge({ status }: { status: string }) {
       )}
     >
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
-      {status}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }

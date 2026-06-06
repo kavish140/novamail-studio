@@ -159,10 +159,10 @@ function DomainsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {(d as any).records ? ((d as any).records as any[]).map((r) => (
-                          <tr key={r.name || r.host} className="border-t border-border/60">
-                            <td className="py-3 pr-4 font-mono text-xs">{r.type || r.record}</td>
-                            <td className="py-3 pr-4 font-mono text-xs break-all">{r.name || r.host}</td>
+                        {d.records && d.records.length > 0 ? d.records.map((r) => (
+                          <tr key={r.name} className="border-t border-border/60">
+                            <td className="py-3 pr-4 font-mono text-xs">{r.type}</td>
+                            <td className="py-3 pr-4 font-mono text-xs break-all">{r.name}</td>
                             <td className="py-3 pr-4 font-mono text-xs break-all">{r.value}</td>
                             <td className="py-3 text-right">
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(r.value)}>

@@ -18,12 +18,22 @@ export type EmailLog = {
   clicks: number;
 };
 
+export type DomainRecord = {
+  type: string;
+  name: string;
+  value: string;
+  ttl?: string | number;
+  priority?: number;
+  status?: string;
+};
+
 export type Domain = {
   id: string;
   name: string;
-  status: "verified" | "pending" | "failed";
+  status: "verified" | "pending" | "failed" | "not_started" | "temporary_failure";
   region: string;
   addedAt: string;
+  records?: DomainRecord[];
 };
 
 export const apiKeys: ApiKey[] = [
