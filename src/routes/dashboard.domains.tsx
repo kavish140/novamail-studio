@@ -42,7 +42,13 @@ function DomainsPage() {
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session || !session.access_token) {
+        console.error("Session Error:", sessionError, "Session:", session);
+        throw new Error("You are not properly logged in. Please refresh or log in again.");
+      }
+
       const apiUrl = import.meta.env.VITE_SUPABASE_URL 
         ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
         : "https://cbyqoakkewlvsgxwosza.supabase.co/functions/v1/domains";
