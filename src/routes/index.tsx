@@ -6,7 +6,7 @@ import { CodeBlock } from "@/components/nova/code-block";
 import { CodeTabs } from "@/components/nova/code-tabs";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { codeSnippets } from "@/lib/mock-data";
+import { getCodeSnippets } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({

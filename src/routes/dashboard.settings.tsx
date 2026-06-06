@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useUser, useTeams, useSubscription, useWebhooks } from "@/hooks/use-supabase";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({
@@ -19,6 +20,15 @@ export const Route = createFileRoute("/dashboard/settings")({
 });
 
 function SettingsPage() {
+  const { data: user } = useUser();
+  const { data: teams } = useTeams();
+  const { data: sub } = useSubscription();
+  const { data: webhooks } = useWebhooks();
+  
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.substring(0, 2).toUpperCase() || "AN";
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
@@ -38,15 +48,16 @@ function SettingsPage() {
           <Card title="Profile" description="Public details associated with your workspace.">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-lg">AN</AvatarFallback>
+                <AvatarImage src={user?.avatarUrl} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-lg">{initials}</AvatarFallback>
               </Avatar>
-              <Button variant="outline" size="sm">Upload photo</Button>
+              <Button variant="outline" size="sm" onClick={() => toast("Photo upload is disabled in demo")}>Upload photo</Button>
             </div>
             <Grid>
-              <FieldRow label="Full name"><Input defaultValue="Ada Nova" /></FieldRow>
-              <FieldRow label="Email"><Input type="email" defaultValue="ada@acme.dev" /></FieldRow>
-              <FieldRow label="Workspace"><Input defaultValue="Acme Engineering" /></FieldRow>
-              <FieldRow label="Timezone"><Input defaultValue="Europe/Berlin" /></FieldRow>
+              <FieldRow label="Full name"><Input defaultValue={user?.name || ""} /></FieldRow>
+              <FieldRow label="Email"><Input type="email" disabled defaultValue={user?.email || ""} /></FieldRow>
+              <FieldRow label="Workspace"><Input defaultValue="Personal Workspace" /></FieldRow>
+              <FieldRow label="Timezone"><Input defaultValue={Intl.DateTimeFormat().resolvedOptions().timeZone} /></FieldRow>
             </Grid>
             <CardFooter>
               <Button onClick={() => toast.success("Profile saved")}>Save changes</Button>
@@ -55,79 +66,74 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="team" className="mt-6">
-          <Card title="Team members" description="Invite teammates and manage permissions.">
+          <Card title="Team members" description="Manage access to your workspace.">
             <div className="space-y-3">
-              {[
-                { n: "Ada Nova", e: "ada@acme.dev", r: "Owner" },
-                { n: "Linus Park", e: "linus@acme.dev", r: "Admin" },
-                { n: "Grace Liu", e: "grace@acme.dev", r: "Developer" },
-              ].map((m) => (
-                <div key={m.e} className="flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9"><AvatarFallback>{m.n.split(" ").map((s) => s[0]).join("")}</AvatarFallback></Avatar>
-                    <div>
-                      <div className="text-sm font-medium">{m.n}</div>
-                      <div className="text-xs text-muted-foreground">{m.e}</div>
+              {teams?.[0]?.team_members?.map((m: any) => {
+                const isMe = m.user_id === user?.id;
+                const name = isMe ? user?.name : "Invited user";
+                const email = isMe ? user?.email : "...";
+                const role = m.role === "owner" ? "Owner" : "Member";
+                
+                return (
+                  <div key={m.user_id} className="flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarFallback>{name?.split(" ").map((s: string) => s[0]).join("")}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-medium">{name} {isMe && "(You)"}</div>
+                        <div className="text-xs text-muted-foreground">{email}</div>
+                      </div>
                     </div>
+                    <Badge variant="secondary">{role}</Badge>
                   </div>
-                  <Badge variant="secondary">{m.r}</Badge>
-                </div>
-              ))}
+                );
+              })}
+              {!teams?.[0] && <div className="p-4 text-center text-sm text-muted-foreground">Loading team...</div>}
             </div>
-            <CardFooter><Button onClick={() => toast("Invite is a demo")}>Invite member</Button></CardFooter>
+            <CardFooter><Button onClick={() => toast("Multi-user invites require an email provider (coming soon)")}>Invite member</Button></CardFooter>
           </Card>
         </TabsContent>
 
         <TabsContent value="billing" className="mt-6 space-y-6">
-          <Card title="Current plan" description="You're on the Pro plan, billed monthly.">
+          <Card title="Current plan" description={`You're on the ${sub?.plan === 'pro' ? 'Pro' : 'Free'} plan.`}>
             <div className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 p-5">
               <div>
-                <div className="font-display text-xl font-semibold">Pro · $29 / mo</div>
-                <div className="text-sm text-muted-foreground">100,000 emails / month. Renews on July 6, 2026.</div>
+                <div className="font-display text-xl font-semibold">{sub?.plan === 'pro' ? 'Pro · ₹2,400 / mo' : 'Free · ₹0 / mo'}</div>
+                <div className="text-sm text-muted-foreground">
+                  {sub?.plan === 'pro' ? '100,000 emails / month.' : '3,000 emails / month.'} 
+                  {sub?.current_period_end && ` Renews on ${new Date(sub.current_period_end).toLocaleDateString()}.`}
+                </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline">Change plan</Button>
-                <Button variant="ghost" className="text-destructive hover:text-destructive">Cancel</Button>
+                <Button variant="outline" onClick={() => toast("UPI Payment Gateway simulation...")}>Upgrade via UPI</Button>
+                {sub?.plan === 'pro' && <Button variant="ghost" className="text-destructive hover:text-destructive">Cancel</Button>}
               </div>
             </div>
-          </Card>
-          <Card title="Invoices" description="Your last six billing periods.">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <tr><th className="py-2">Date</th><th>Amount</th><th>Status</th><th></th></tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="border-t border-border/60">
-                    <td className="py-3 text-muted-foreground">2026-0{6 - i}-06</td>
-                    <td>$29.00</td>
-                    <td><Badge variant="secondary" className="bg-success/15 text-success border-success/30">Paid</Badge></td>
-                    <td className="text-right"><Button size="sm" variant="ghost">Download</Button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </Card>
         </TabsContent>
 
         <TabsContent value="webhooks" className="mt-6">
-          <Card title="Webhook endpoint" description="We'll POST signed events here when emails are delivered, opened, or bounced.">
-            <FieldRow label="Endpoint URL"><Input defaultValue="https://api.acme.dev/webhooks/novamail" /></FieldRow>
-            <FieldRow label="Signing secret"><Input readOnly defaultValue="whsec_••••••••••••••••" className="font-mono" /></FieldRow>
-            <div className="space-y-3 pt-2">
-              {[
-                { id: "delivered", label: "email.delivered" },
-                { id: "opened", label: "email.opened" },
-                { id: "clicked", label: "email.clicked" },
-                { id: "bounced", label: "email.bounced" },
-              ].map((e) => (
-                <div key={e.id} className="flex items-center justify-between rounded-lg border border-border/60 bg-background/40 px-4 py-3">
-                  <span className="font-mono text-sm">{e.label}</span>
-                  <Switch defaultChecked />
+          <Card title="Webhook endpoints" description="We'll POST signed events here when emails are delivered, opened, or bounced.">
+            {webhooks?.map((wh: any) => (
+              <div key={wh.id} className="mb-6 space-y-4 rounded-xl border border-border/60 bg-background/40 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="font-mono text-sm">{wh.endpoint_url}</div>
+                  <Badge variant={wh.is_active ? "secondary" : "outline"} className={wh.is_active ? "bg-success/15 text-success" : ""}>
+                    {wh.is_active ? "Active" : "Disabled"}
+                  </Badge>
                 </div>
-              ))}
-            </div>
-            <CardFooter><Button onClick={() => toast.success("Webhook saved")}>Save webhook</Button></CardFooter>
+                <FieldRow label="Signing secret"><Input readOnly defaultValue={wh.signing_secret} className="font-mono" /></FieldRow>
+              </div>
+            ))}
+            
+            {!webhooks?.length && (
+              <div className="mb-6 text-sm text-muted-foreground">You haven't configured any webhooks yet.</div>
+            )}
+            
+            <CardFooter>
+              <Button onClick={() => toast("Endpoint creation form opening...")}>Add endpoint</Button>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

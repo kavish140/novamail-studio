@@ -8,8 +8,47 @@ export function useUser() {
     queryFn: async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) throw error;
-      return user;
-    }
+      if (!user) return null;
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.email?.split("@")[0],
+        avatarUrl: user.user_metadata?.avatar_url,
+      };
+    },
+  });
+}
+
+export function useTeams() {
+  return useQuery({
+    queryKey: ['teams'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('teams').select('*, team_members(role, user_id)');
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useSubscription() {
+  return useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('subscriptions').select('*').order('created_at', { ascending: false }).limit(1).single();
+      if (error && error.code !== 'PGRST116') throw error; // Ignore not found
+      return data || null;
+    },
+  });
+}
+
+export function useWebhooks() {
+  return useQuery({
+    queryKey: ['webhooks'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('webhooks').select('*');
+      if (error) throw error;
+      return data;
+    },
   });
 }
 

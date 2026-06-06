@@ -66,8 +66,8 @@ export const spark = (seed = 1) =>
     y: Math.round(40 + Math.sin((i + seed) / 2) * 18 + Math.random() * 10),
   }));
 
-export const codeSnippets = {
-  curl: `curl https://api.novamail.app/v1/email \\
+export const getCodeSnippets = (apiUrl: string) => ({
+  curl: `curl ${apiUrl} \\
   -H "Authorization: Bearer nm_live_••••••••" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -78,7 +78,11 @@ export const codeSnippets = {
   }'`,
   node: `import { NovaMail } from "novamail";
 
+// Ensure NOVAMAIL_API_KEY is set in your environment
 const nova = new NovaMail(process.env.NOVAMAIL_API_KEY);
+
+// Point to your dedicated endpoint
+nova.config.baseUrl = "${apiUrl.replace('/send-email', '')}";
 
 await nova.emails.send({
   from: "you@yourdomain.com",
@@ -87,13 +91,17 @@ await nova.emails.send({
   html: "<h1>Hello, Ada</h1>",
 });`,
   python: `from novamail import NovaMail
+import os
 
-nova = NovaMail(api_key=os.environ["NOVAMAIL_API_KEY"])
+nova = NovaMail(
+    api_key=os.environ["NOVAMAIL_API_KEY"],
+    base_url="${apiUrl.replace('/send-email', '')}"
+)
 
 nova.emails.send(
     from_="you@yourdomain.com",
     to="ada@lovelace.dev",
     subject="Welcome aboard",
     html="<h1>Hello, Ada</h1>",
-)`,
-};
+)`
+});
