@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Mail, MailCheck, MailX, MousePointerClick } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { spark, trendData } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/nova/status-badge";
 import { CodeBlock } from "@/components/nova/code-block";
 import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 
 import { useEmailLogs, useUser } from "@/hooks/use-supabase";
 
@@ -29,11 +29,44 @@ function Overview() {
   const openedCount = emailLogs.filter(l => (l.opens ?? 0) > 0).length;
   const openRate = deliveredCount > 0 ? ((openedCount / deliveredCount) * 100).toFixed(1) + "%" : "0%";
 
+  const trendData = useMemo(() => {
+    const last30Days = Array.from({ length: 30 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (29 - i));
+      return {
+        day: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        dateStr: d.toISOString().split('T')[0],
+        sent: 0,
+        delivered: 0,
+        bounced: 0,
+      };
+    });
+
+    emailLogs.forEach(log => {
+      const d = new Date((log as any).rawCreatedAt || log.sentAt);
+      const dateStr = d.toISOString().split('T')[0];
+      const bucket = last30Days.find(b => b.dateStr === dateStr);
+      if (bucket) {
+        bucket.sent++;
+        if (log.status === 'delivered') bucket.delivered++;
+        if (log.status === 'bounced') bucket.bounced++;
+      }
+    });
+
+    return last30Days;
+  }, [emailLogs]);
+
+  const generateSpark = (key: 'sent' | 'delivered' | 'bounced') => {
+    // take the last 20 days for the sparkline
+    return trendData.slice(-20).map((d, i) => ({ x: i, y: d[key] }));
+  };
+  const sparkOpenRate = trendData.slice(-20).map((d, i) => ({ x: i, y: d.delivered > 0 ? (d.sent / d.delivered) : 0 })); // dummy open rate spark
+
   const stats = [
-    { label: "Sent (30d)", value: sentCount.toLocaleString(), delta: "+0.0%", icon: Mail, seed: 1 },
-    { label: "Delivered", value: deliveredCount.toLocaleString(), delta: "+0.0%", icon: MailCheck, seed: 2 },
-    { label: "Bounced", value: bouncedCount.toLocaleString(), delta: "0.0%", icon: MailX, seed: 3 },
-    { label: "Open rate", value: openRate, delta: "0.0%", icon: MousePointerClick, seed: 4 },
+    { label: "Sent (30d)", value: sentCount.toLocaleString(), delta: "+0.0%", icon: Mail, spark: generateSpark('sent') },
+    { label: "Delivered", value: deliveredCount.toLocaleString(), delta: "+0.0%", icon: MailCheck, spark: generateSpark('delivered') },
+    { label: "Bounced", value: bouncedCount.toLocaleString(), delta: "0.0%", icon: MailX, spark: generateSpark('bounced') },
+    { label: "Open rate", value: openRate, delta: "0.0%", icon: MousePointerClick, spark: sparkOpenRate },
   ];
 
   return (
@@ -63,7 +96,7 @@ function Overview() {
             </div>
             <div className="mt-3 h-12">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={spark(s.seed)}>
+                <LineChart data={s.spark}>
                   <Line type="monotone" dataKey="y" stroke="var(--color-primary)" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>

@@ -61,6 +61,7 @@ export function useEmailLogs() {
         subject: row.subject,
         status: row.status,
         sentAt: new Date(row.created_at).toLocaleString(),
+        rawCreatedAt: row.created_at,
         opens: row.opens || 0,
         clicks: row.clicks || 0
       })) as EmailLog[];
