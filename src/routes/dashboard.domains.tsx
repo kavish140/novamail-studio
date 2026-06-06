@@ -57,12 +57,14 @@ function DomainsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token}`
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY || ""
         },
-        body: JSON.stringify({ name: name.trim(), region: "us-east" })
+        body: JSON.stringify({ name: name.trim(), region: "us-east-1" })
       });
 
       const responseData = await res.json();
+      console.log("Domain API response:", res.status, responseData);
 
       if (!res.ok) {
         throw new Error(responseData.error || "Failed to add domain");
@@ -74,6 +76,7 @@ function DomainsPage() {
       if (responseData.id) setExpanded(responseData.id);
       refetch();
     } catch (err: any) {
+      console.error("Add domain error:", err);
       toast.error(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);

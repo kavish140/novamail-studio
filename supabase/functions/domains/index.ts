@@ -20,28 +20,35 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing Authorization header");
+    
+    const token = authHeader.replace("Bearer ", "").trim();
 
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) throw new Error("Unauthorized");
+    // explicitly pass the token into getUser!
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !user) throw new Error("Auth Error: " + (userError?.message || "Unauthorized"));
 
     const url = new URL(req.url);
     const path = url.pathname.split("/").pop();
 
-    if (req.method === "POST" && path === "domains") {
+    if (req.method === "POST" && path !== "verify") {
       // Add Domain
-      const { name, region = "us-east" } = await req.json();
+      const body = await req.json();
+      const name = body.name;
+      const region = body.region || "us-east-1";
+
+      if (!name || !name.trim()) throw new Error("Domain name is required");
 
       const res = await fetch("https://api.resend.com/domains", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({ name, region }),
+        body: JSON.stringify({ name: name.trim(), region }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to add domain to Resend");
+      if (!res.ok) throw new Error(data.message || JSON.stringify(data) || "Failed to add domain to Resend");
 
       // Save to Supabase
       const { data: dbData, error: dbError } = await supabaseClient
@@ -57,7 +64,7 @@ serve(async (req) => {
         .select()
         .single();
 
-      if (dbError) throw new Error(dbError.message);
+      if (dbError) throw new Error("DB Error: " + dbError.message);
 
       return new Response(JSON.stringify(dbData), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -78,10 +85,7 @@ serve(async (req) => {
       const verifyData = await verifyRes.json();
       if (!verifyRes.ok) throw new Error(verifyData.message || "Failed to verify domain");
 
-      // We can also poll the status or just let Resend update it. 
-      // For now, Resend returns { id, name, status... } usually.
-      // Wait, verify endpoint might just return an empty response or basic details.
-      // Let's do a GET to fetch the current status.
+      // Fetch the current status from Resend
       const getRes = await fetch(`https://api.resend.com/domains/${domain.resend_domain_id}`, {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       });
@@ -100,8 +104,20 @@ serve(async (req) => {
       return new Response(JSON.stringify(updated), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
+    // Handle GET requests to list domains
+    if (req.method === "GET") {
+      const { data, error } = await supabaseClient
+        .from("domains")
+        .select("*")
+        .order("added_at", { ascending: false });
+      
+      if (error) throw new Error(error.message);
+      return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: any) {
+    console.error("Edge Function Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
