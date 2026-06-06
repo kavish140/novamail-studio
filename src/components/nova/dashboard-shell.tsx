@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
+import { useUser, useEmailLogs } from "@/hooks/use-supabase";
+import { supabase } from "@/lib/supabase";
 
 type NavItem = { to: string; label: string; icon: typeof Gauge; exact?: boolean };
 const nav: NavItem[] = [
@@ -27,6 +29,18 @@ const nav: NavItem[] = [
 export function DashboardShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [env, setEnv] = useState<"test" | "live">("live");
+
+  const { data: user } = useUser();
+  const { data: emailLogs = [] } = useEmailLogs();
+
+  const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
+  const initials = name.substring(0, 2).toUpperCase();
+  const email = user?.email || "";
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   return (
     <div className="flex min-h-screen bg-background bg-grid">
@@ -56,9 +70,9 @@ export function DashboardShell() {
         </nav>
         <div className="m-3 rounded-xl border border-border/60 bg-surface-elevated p-4">
           <div className="text-xs text-muted-foreground">Monthly usage</div>
-          <div className="mt-1 text-sm font-semibold">42,184 / 100,000</div>
+          <div className="mt-1 text-sm font-semibold">{emailLogs.length.toLocaleString()} / 3,000</div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-[42%] rounded-full bg-gradient-to-r from-primary to-accent" />
+            <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent" style={{ width: `${Math.min((emailLogs.length / 3000) * 100, 100)}%` }} />
           </div>
           <Button size="sm" variant="outline" className="mt-3 w-full">Upgrade plan</Button>
         </div>
@@ -91,15 +105,21 @@ export function DashboardShell() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full p-1 transition hover:bg-surface">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">AN</AvatarFallback>
-                  </Avatar>
+                  {user?.user_metadata?.avatar_url ? (
+                    <Avatar className="h-8 w-8">
+                      <img src={user.user_metadata.avatar_url} alt="Avatar" className="h-full w-full object-cover rounded-full" />
+                    </Avatar>
+                  ) : (
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">{initials}</AvatarFallback>
+                    </Avatar>
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
-                  <div className="text-sm font-medium">Ada Nova</div>
-                  <div className="text-xs text-muted-foreground">ada@acme.dev</div>
+                  <div className="text-sm font-medium">{name}</div>
+                  <div className="text-xs text-muted-foreground truncate">{email}</div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -109,10 +129,8 @@ export function DashboardShell() {
                   <Link to="/docs">Documentation</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/" className="flex items-center gap-2">
-                    <LogOut className="h-4 w-4" /> Sign out
-                  </Link>
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

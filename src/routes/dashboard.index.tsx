@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Mail, MailCheck, MailX, MousePointerClick } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { emailLogs, spark, trendData } from "@/lib/mock-data";
+import { spark, trendData } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/nova/status-badge";
 import { CodeBlock } from "@/components/nova/code-block";
 import { Button } from "@/components/ui/button";
 
-import { useEmailLogs } from "@/hooks/use-supabase";
+import { useEmailLogs, useUser } from "@/hooks/use-supabase";
 
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({
@@ -18,21 +18,29 @@ export const Route = createFileRoute("/dashboard/")({
   component: Overview,
 });
 
-const stats = [
-  { label: "Sent (30d)", value: "42,184", delta: "+12.4%", icon: Mail, seed: 1 },
-  { label: "Delivered", value: "41,902", delta: "+12.1%", icon: MailCheck, seed: 2 },
-  { label: "Bounced", value: "182", delta: "-3.2%", icon: MailX, seed: 3 },
-  { label: "Open rate", value: "48.6%", delta: "+1.8%", icon: MousePointerClick, seed: 4 },
-];
-
 function Overview() {
   const { data: emailLogs = [], isLoading } = useEmailLogs();
+  const { data: user } = useUser();
+  const name = user?.user_metadata?.full_name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "there";
+
+  const sentCount = emailLogs.length;
+  const deliveredCount = emailLogs.filter(l => l.status === 'delivered').length;
+  const bouncedCount = emailLogs.filter(l => l.status === 'bounced').length;
+  const openedCount = emailLogs.filter(l => (l.opens ?? 0) > 0).length;
+  const openRate = deliveredCount > 0 ? ((openedCount / deliveredCount) * 100).toFixed(1) + "%" : "0%";
+
+  const stats = [
+    { label: "Sent (30d)", value: sentCount.toLocaleString(), delta: "+0.0%", icon: Mail, seed: 1 },
+    { label: "Delivered", value: deliveredCount.toLocaleString(), delta: "+0.0%", icon: MailCheck, seed: 2 },
+    { label: "Bounced", value: bouncedCount.toLocaleString(), delta: "0.0%", icon: MailX, seed: 3 },
+    { label: "Open rate", value: openRate, delta: "0.0%", icon: MousePointerClick, seed: 4 },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back, {name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">Here's how NovaMail is performing across your workspace.</p>
         </div>
         <Button asChild>

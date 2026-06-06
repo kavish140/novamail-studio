@@ -2,6 +2,17 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { ApiKey, Domain, EmailLog } from '@/lib/mock-data';
 
+export function useUser() {
+  return useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      return user;
+    }
+  });
+}
+
 export function useApiKeys() {
   return useQuery({
     queryKey: ['api_keys'],
