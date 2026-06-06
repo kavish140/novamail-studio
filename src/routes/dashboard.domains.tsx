@@ -162,7 +162,14 @@ function DomainsPage() {
                         {d.records && d.records.length > 0 ? d.records.map((r) => (
                           <tr key={r.name} className="border-t border-border/60">
                             <td className="py-3 pr-4 font-mono text-xs">{r.type}</td>
-                            <td className="py-3 pr-4 font-mono text-xs break-all">{r.name}</td>
+                            <td className="py-3 pr-4 font-mono text-xs break-all">
+                              <div className="flex items-center gap-2">
+                                <span>{r.name}</span>
+                                <Button size="icon" variant="ghost" className="h-6 w-6 opacity-50 hover:opacity-100 shrink-0" onClick={() => copy(r.name)}>
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </td>
                             <td className="py-3 pr-4 font-mono text-xs break-all">{r.value}</td>
                             <td className="py-3 text-right">
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(r.value)}>
