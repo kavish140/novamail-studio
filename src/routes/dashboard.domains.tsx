@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { useDomains } from "@/hooks/use-supabase";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/domains")({
   head: () => ({
@@ -34,6 +35,7 @@ function DomainsPage() {
   const [name, setName] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState<string | null>(null);
 
   const addDomain = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +82,45 @@ function DomainsPage() {
       toast.error(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const verifyDomain = async (id: string) => {
+    setIsVerifying(id);
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session || !session.access_token) {
+        throw new Error("You must be logged in to verify domains");
+      }
+
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL 
+        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
+        : "https://cbygqakkewlvsgswosza.supabase.co/functions/v1/domains";
+
+      const res = await fetch(`${baseUrl}/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY || ""
+        },
+        body: JSON.stringify({ id })
+      });
+
+      const responseData = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(responseData.error || "Failed to verify domain");
+      }
+
+      toast.success("Domain verification triggered!");
+      refetch();
+    } catch (err: any) {
+      console.error("Verify domain error:", err);
+      toast.error(err.message || "An unexpected error occurred");
+    } finally {
+      setIsVerifying(null);
     }
   };
 
@@ -139,6 +180,12 @@ function DomainsPage() {
                       <div className="mr-2 h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
                       Awaiting DNS...
                     </div>
+                  )}
+                  {d.status !== "verified" && (
+                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => verifyDomain(d.id)} disabled={isVerifying === d.id}>
+                      <RefreshCw className={cn("h-3 w-3 mr-1.5", isVerifying === d.id && "animate-spin")} />
+                      Verify
+                    </Button>
                   )}
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => remove(d.id)}>
                     <Trash2 className="h-4 w-4" />
