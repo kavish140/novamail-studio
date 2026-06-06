@@ -67,12 +67,16 @@ function DocsPage() {
           </Section>
 
           <Section id="quickstart" title="Quickstart">
-            <ol className="ml-5 list-decimal space-y-2 text-muted-foreground">
+            <ol className="ml-5 list-decimal space-y-2 text-muted-foreground mb-6">
               <li>Verify a sending domain on the Domains page.</li>
               <li>Create an API key in your test environment.</li>
               <li>Install the SDK or call the REST endpoint directly.</li>
               <li>Send your first email.</li>
             </ol>
+            <div className="mb-8">
+              <h4 className="mb-3 font-display text-base font-semibold">Install the Python SDK</h4>
+              <CodeBlock filename="terminal" language="bash" code="pip install novamail" />
+            </div>
             <CodeTabs />
           </Section>
 

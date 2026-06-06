@@ -101,22 +101,18 @@ const response = await fetch('${apiUrl}', {
     html: '<strong>It works!</strong>'
   })
 });`,
-  python: `import requests
+  python: `from novamail import NovaMailClient
 
-url = "${apiUrl}"
-headers = {
-    "Authorization": "Bearer nm_live_••••••••",
-    "Content-Type": "application/json"
-}
-data = {
-    "from": "hello@sitenova.dev",
-    "to": "ada@lovelace.dev",
-    "subject": "Hello from NovaMail",
-    "html": "<strong>It works!</strong>"
-}
+client = NovaMailClient(api_key="nm_live_••••••••")
 
-response = requests.post(url, headers=headers, json=data)
-print(response.json())`,
+response = client.send_email(
+    from_email="hello@sitenova.dev",
+    to="ada@lovelace.dev",
+    subject="Hello from NovaMail",
+    html="<strong>It works!</strong>"
+)
+
+print(response)`,
   php: `<?php
 $ch = curl_init('${apiUrl}');
 $data = json_encode([
