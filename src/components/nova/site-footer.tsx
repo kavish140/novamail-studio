@@ -37,10 +37,10 @@ export function SiteFooter() {
           { label: "Changelog", href: "#" },
         ]} />
         <FooterCol title="Company" items={[
-          { label: "About", href: "#" },
-          { label: "Customers", href: "#" },
-          { label: "Careers", href: "#" },
-          { label: "Contact", href: "#" },
+          { label: "About SiteNova", href: "https://sitenova.dev" },
+          { label: "Twitter / X", href: "https://x.com/Kavish_Ganatra" },
+          { label: "Instagram", href: "https://instagram.com/sitenova_web_design" },
+          { label: "Contact", href: "mailto:kavishganatra5@gmail.com" },
         ]} />
         <FooterCol title="Legal" items={[
           { label: "Privacy", href: "#" },

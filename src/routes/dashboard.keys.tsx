@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy, Eye, EyeOff, MoreHorizontal, Plus, ShieldAlert, Trash2 } from "lucide-react";
-import { apiKeys as seed, type ApiKey } from "@/lib/mock-data";
+import { type ApiKey } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useApiKeys } from "@/hooks/use-supabase";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/keys")({
   head: () => ({
@@ -49,7 +51,7 @@ function randSuffix() {
 }
 
 function KeysPage() {
-  const [keys, setKeys] = useState<ApiKey[]>(seed);
+  const { data: keys = [], refetch } = useApiKeys();
   const [creating, setCreating] = useState(false);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [pendingRevoke, setPendingRevoke] = useState<ApiKey | null>(null);
@@ -57,27 +59,42 @@ function KeysPage() {
   const [name, setName] = useState("");
   const [env, setEnv] = useState<"test" | "live">("live");
 
-  const create = () => {
+  const create = async () => {
     if (!name.trim()) return toast.error("Give your key a name");
+    
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return toast.error("You must be logged in");
+
     const full = `nm_${env}_${randSuffix()}${randSuffix()}`;
-    const k: ApiKey = {
-      id: `k_${randSuffix()}`,
+    const prefix = `nm_${env}_${full.slice(8, 12)}`;
+
+    const { error } = await supabase.from('api_keys').insert({
+      user_id: userData.user.id,
       name: name.trim(),
-      prefix: `nm_${env}_${full.slice(8, 12)}`,
-      env,
-      createdAt: new Date().toISOString().slice(0, 10),
-      lastUsed: "Never",
-    };
-    setKeys([k, ...keys]);
+      prefix,
+      env
+    });
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
     setCreatedKey(full);
     setName("");
     toast.success("API key created");
+    refetch();
   };
 
-  const revoke = (id: string) => {
-    setKeys((k) => k.filter((x) => x.id !== id));
+  const revoke = async (id: string) => {
+    const { error } = await supabase.from('api_keys').delete().eq('id', id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Key revoked");
     setPendingRevoke(null);
+    refetch();
   };
 
   const copy = (text: string) => {

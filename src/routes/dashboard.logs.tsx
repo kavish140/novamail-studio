@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { emailLogs, type EmailLog } from "@/lib/mock-data";
+import { type EmailLog } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/components/nova/status-badge";
 import { CodeBlock } from "@/components/nova/code-block";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useEmailLogs } from "@/hooks/use-supabase";
 
 export const Route = createFileRoute("/dashboard/logs")({
   head: () => ({
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/dashboard/logs")({
 });
 
 function LogsPage() {
+  const { data: emailLogs = [], isLoading } = useEmailLogs();
   const [status, setStatus] = useState<string>("all");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<EmailLog | null>(null);

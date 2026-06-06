@@ -6,6 +6,8 @@ import { StatusBadge } from "@/components/nova/status-badge";
 import { CodeBlock } from "@/components/nova/code-block";
 import { Button } from "@/components/ui/button";
 
+import { useEmailLogs } from "@/hooks/use-supabase";
+
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({
     meta: [
@@ -24,11 +26,13 @@ const stats = [
 ];
 
 function Overview() {
+  const { data: emailLogs = [], isLoading } = useEmailLogs();
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back, Ada</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back</h1>
           <p className="mt-1 text-sm text-muted-foreground">Here's how NovaMail is performing across your workspace.</p>
         </div>
         <Button asChild>
@@ -119,26 +123,32 @@ function Overview() {
           </Button>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-y border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-6 py-3">Time</th>
-                <th className="px-6 py-3">Recipient</th>
-                <th className="px-6 py-3">Subject</th>
-                <th className="px-6 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {emailLogs.slice(0, 6).map((row) => (
-                <tr key={row.id} className="border-b border-border/60 last:border-0 hover:bg-surface-elevated/50">
-                  <td className="px-6 py-3 text-xs text-muted-foreground">{row.sentAt}</td>
-                  <td className="px-6 py-3 font-mono text-xs">{row.to}</td>
-                  <td className="px-6 py-3">{row.subject}</td>
-                  <td className="px-6 py-3"><StatusBadge status={row.status} /></td>
+          {isLoading ? (
+            <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading logs...</div>
+          ) : emailLogs.length === 0 ? (
+             <div className="p-8 text-center text-sm text-muted-foreground">No recent activity. Send your first email to see it here!</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-y border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-6 py-3">Time</th>
+                  <th className="px-6 py-3">Recipient</th>
+                  <th className="px-6 py-3">Subject</th>
+                  <th className="px-6 py-3">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {emailLogs.slice(0, 6).map((row) => (
+                  <tr key={row.id} className="border-b border-border/60 last:border-0 hover:bg-surface-elevated/50">
+                    <td className="px-6 py-3 text-xs text-muted-foreground">{row.sentAt}</td>
+                    <td className="px-6 py-3 font-mono text-xs">{row.to}</td>
+                    <td className="px-6 py-3">{row.subject}</td>
+                    <td className="px-6 py-3"><StatusBadge status={row.status as any} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

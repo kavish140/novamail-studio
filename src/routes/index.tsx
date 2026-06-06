@@ -255,7 +255,7 @@ function Faq() {
   return (
     <section id="faq" className="border-t border-border/60 bg-surface/20 py-24">
       <div className="mx-auto max-w-3xl px-6">
-        <SectionHead eyebrow="FAQ" title="Questions, answered." subtitle="Still curious? Email hello@novamail.app — a human will reply." />
+        <SectionHead eyebrow="FAQ" title="Questions, answered." subtitle="Still curious? Email kavishganatra5@gmail.com — a human will reply." />
         <Accordion type="single" collapsible className="mt-10">
           {items.map((it) => (
             <AccordionItem key={it.q} value={it.q} className="border-border/60">

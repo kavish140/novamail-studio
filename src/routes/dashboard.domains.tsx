@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Copy, Plus, RefreshCw, Trash2 } from "lucide-react";
-import { domains as seed, type Domain } from "@/lib/mock-data";
+import { type Domain } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/nova/status-badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useDomains } from "@/hooks/use-supabase";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/domains")({
   head: () => ({
@@ -27,29 +29,48 @@ const records = (host: string) => [
 ];
 
 function DomainsPage() {
-  const [list, setList] = useState<Domain[]>(seed);
+  const { data: list = [], refetch } = useDomains();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [expanded, setExpanded] = useState<string | null>(seed[2]?.id ?? null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  const add = () => {
+  const add = async () => {
     if (!name.trim()) return toast.error("Enter a domain");
-    const d: Domain = { id: `d_${Date.now()}`, name: name.trim(), status: "pending", region: "us-east", addedAt: new Date().toISOString().slice(0, 10) };
-    setList([d, ...list]);
+    
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return toast.error("You must be logged in");
+
+    const { data, error } = await supabase.from('domains').insert({
+      user_id: userData.user.id,
+      name: name.trim(),
+      status: 'pending',
+      region: 'us-east'
+    }).select().single();
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
     setName("");
     setOpen(false);
-    setExpanded(d.id);
+    if (data) setExpanded(data.id);
     toast.success("Domain added — verify the DNS records to start sending");
+    refetch();
   };
 
-  const verify = (id: string) => {
-    setList((l) => l.map((d) => (d.id === id ? { ...d, status: "verified" } : d)));
+  const verify = async (id: string) => {
+    const { error } = await supabase.from('domains').update({ status: 'verified' }).eq('id', id);
+    if (error) return toast.error(error.message);
     toast.success("Domain verified");
+    refetch();
   };
 
-  const remove = (id: string) => {
-    setList((l) => l.filter((d) => d.id !== id));
+  const remove = async (id: string) => {
+    const { error } = await supabase.from('domains').delete().eq('id', id);
+    if (error) return toast.error(error.message);
     toast.success("Domain removed");
+    refetch();
   };
 
   const copy = (t: string) => { navigator.clipboard.writeText(t); toast.success("Copied"); };
