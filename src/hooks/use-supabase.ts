@@ -30,17 +30,6 @@ export function useTeams() {
   });
 }
 
-export function useSubscription() {
-  return useQuery({
-    queryKey: ['subscription'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('subscriptions').select('*').order('created_at', { ascending: false }).limit(1).single();
-      if (error && error.code !== 'PGRST116') throw error; // Ignore not found
-      return data || null;
-    },
-  });
-}
-
 export function useWebhooks() {
   return useQuery({
     queryKey: ['webhooks'],

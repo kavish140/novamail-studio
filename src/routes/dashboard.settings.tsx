@@ -7,13 +7,13 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { useUser, useTeams, useSubscription, useWebhooks } from "@/hooks/use-supabase";
+import { useUser, useTeams, useWebhooks } from "@/hooks/use-supabase";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({
     meta: [
       { title: "Settings — NovaMail" },
-      { name: "description", content: "Manage your profile, team, billing, and webhooks." },
+      { name: "description", content: "Manage your profile, team, and webhooks." },
     ],
   }),
   component: SettingsPage,
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/dashboard/settings")({
 function SettingsPage() {
   const { data: user } = useUser();
   const { data: teams } = useTeams();
-  const { data: sub } = useSubscription();
   const { data: webhooks } = useWebhooks();
   
   const initials = user?.name
@@ -33,14 +32,13 @@ function SettingsPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <h1 className="font-display text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Workspace, team, and billing configuration.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Workspace, team, and webhook configuration.</p>
       </div>
 
       <Tabs defaultValue="profile">
         <TabsList className="bg-surface/70">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
         </TabsList>
 
@@ -92,24 +90,6 @@ function SettingsPage() {
               {!teams?.[0] && <div className="p-4 text-center text-sm text-muted-foreground">Loading team...</div>}
             </div>
             <CardFooter><Button onClick={() => toast("Multi-user invites require an email provider (coming soon)")}>Invite member</Button></CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="billing" className="mt-6 space-y-6">
-          <Card title="Current plan" description={`You're on the ${sub?.plan === 'pro' ? 'Pro' : 'Free'} plan.`}>
-            <div className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 p-5">
-              <div>
-                <div className="font-display text-xl font-semibold">{sub?.plan === 'pro' ? 'Pro · ₹2,400 / mo' : 'Free · ₹0 / mo'}</div>
-                <div className="text-sm text-muted-foreground">
-                  {sub?.plan === 'pro' ? '100,000 emails / month.' : '3,000 emails / month.'} 
-                  {sub?.current_period_end && ` Renews on ${new Date(sub.current_period_end).toLocaleDateString()}.`}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => toast("UPI Payment Gateway simulation...")}>Upgrade via UPI</Button>
-                {sub?.plan === 'pro' && <Button variant="ghost" className="text-destructive hover:text-destructive">Cancel</Button>}
-              </div>
-            </div>
           </Card>
         </TabsContent>
 

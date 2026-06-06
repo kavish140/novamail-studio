@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { Webhook } from "https://esm.sh/svix@1.21.0";
 
-// Standard signing function using HMAC SHA-256
+// Standard signing function using HMAC SHA-256 (for signing payloads we send to our customers)
 async function signPayload(payload: string, secret: string) {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -18,6 +19,25 @@ async function signPayload(payload: string, secret: string) {
 serve(async (req) => {
   try {
     const payloadText = await req.text();
+    
+    // 1. Verify the webhook came from Resend
+    const RESEND_WEBHOOK_SECRET = Deno.env.get("RESEND_WEBHOOK_SECRET");
+    if (RESEND_WEBHOOK_SECRET) {
+      const svixHeaders = {
+        "svix-id": req.headers.get("svix-id") || "",
+        "svix-timestamp": req.headers.get("svix-timestamp") || "",
+        "svix-signature": req.headers.get("svix-signature") || "",
+      };
+      
+      try {
+        const wh = new Webhook(RESEND_WEBHOOK_SECRET);
+        wh.verify(payloadText, svixHeaders);
+      } catch (err) {
+        console.error("Invalid Resend Webhook Signature");
+        return new Response("Unauthorized", { status: 401 });
+      }
+    }
+
     const payload = JSON.parse(payloadText);
 
     // Get the email ID from Resend's payload
