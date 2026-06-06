@@ -56,15 +56,7 @@ function DomainsPage() {
     refetch();
   };
 
-  const verify = async (id: string) => {
-    const { error } = await supabase.functions.invoke("domains/verify", {
-      body: { id }
-    });
-    
-    if (error) return toast.error(error.message || "Failed to verify domain");
-    toast.success("Verification triggered. Status may take a moment to update.");
-    refetch();
-  };
+
 
   const remove = async (id: string) => {
     // Delete from DB. We can optionally also delete from Resend via an Edge Function, 
@@ -117,10 +109,11 @@ function DomainsPage() {
                   <span className="text-xs text-muted-foreground">{d.region} · added {d.addedAt}</span>
                 </div>
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  {d.status !== "verified" && (
-                    <Button size="sm" variant="outline" onClick={() => verify(d.id)}>
-                      <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Verify
-                    </Button>
+                  {d.status === "pending" && (
+                    <div className="flex items-center text-xs text-muted-foreground mr-2">
+                      <div className="mr-2 h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      Awaiting DNS...
+                    </div>
                   )}
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => remove(d.id)}>
                     <Trash2 className="h-4 w-4" />
