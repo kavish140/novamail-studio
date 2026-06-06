@@ -65,13 +65,21 @@ function KeysPage() {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return toast.error("You must be logged in");
 
-    const full = `nm_${env}_${randSuffix()}${randSuffix()}`;
-    const prefix = `nm_${env}_${full.slice(8, 12)}`;
+    const rawSecret = randSuffix() + randSuffix() + randSuffix();
+    const full = `nm_${env}_${rawSecret}`;
+    const prefix = `nm_${env}_${rawSecret.slice(0, 4)}`;
+
+    // Hash the key using SHA-256
+    const msgUint8 = new TextEncoder().encode(full);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const keyHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
     const { error } = await supabase.from('api_keys').insert({
       user_id: userData.user.id,
       name: name.trim(),
       prefix,
+      key_hash: keyHash,
       env
     });
 

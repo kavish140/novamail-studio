@@ -40,15 +40,12 @@ function DomainsPage() {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return toast.error("You must be logged in");
 
-    const { data, error } = await supabase.from('domains').insert({
-      user_id: userData.user.id,
-      name: name.trim(),
-      status: 'pending',
-      region: 'us-east'
-    }).select().single();
+    const { data, error } = await supabase.functions.invoke("domains", {
+      body: { name: name.trim(), region: "us-east" }
+    });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Failed to add domain");
       return;
     }
 
@@ -60,13 +57,18 @@ function DomainsPage() {
   };
 
   const verify = async (id: string) => {
-    const { error } = await supabase.from('domains').update({ status: 'verified' }).eq('id', id);
-    if (error) return toast.error(error.message);
-    toast.success("Domain verified");
+    const { error } = await supabase.functions.invoke("domains/verify", {
+      body: { id }
+    });
+    
+    if (error) return toast.error(error.message || "Failed to verify domain");
+    toast.success("Verification triggered. Status may take a moment to update.");
     refetch();
   };
 
   const remove = async (id: string) => {
+    // Delete from DB. We can optionally also delete from Resend via an Edge Function, 
+    // but deleting from DB is sufficient to hide it from the user.
     const { error } = await supabase.from('domains').delete().eq('id', id);
     if (error) return toast.error(error.message);
     toast.success("Domain removed");
@@ -139,10 +141,10 @@ function DomainsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {records(d.name).map((r) => (
-                          <tr key={r.host} className="border-t border-border/60">
-                            <td className="py-3 pr-4 font-mono text-xs">{r.type}</td>
-                            <td className="py-3 pr-4 font-mono text-xs break-all">{r.host}</td>
+                        {(d as any).records ? ((d as any).records as any[]).map((r) => (
+                          <tr key={r.name || r.host} className="border-t border-border/60">
+                            <td className="py-3 pr-4 font-mono text-xs">{r.type || r.record}</td>
+                            <td className="py-3 pr-4 font-mono text-xs break-all">{r.name || r.host}</td>
                             <td className="py-3 pr-4 font-mono text-xs break-all">{r.value}</td>
                             <td className="py-3 text-right">
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(r.value)}>
@@ -150,7 +152,9 @@ function DomainsPage() {
                               </Button>
                             </td>
                           </tr>
-                        ))}
+                        )) : (
+                          <tr><td colSpan={4} className="py-3 text-xs text-muted-foreground">No records found. Delete and try adding the domain again.</td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
