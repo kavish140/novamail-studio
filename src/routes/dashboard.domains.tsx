@@ -155,6 +155,7 @@ function DomainsPage() {
                           <th className="py-2 pr-4">Type</th>
                           <th className="py-2 pr-4">Host</th>
                           <th className="py-2 pr-4">Value</th>
+                          <th className="py-2 pr-4">Priority</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -171,6 +172,7 @@ function DomainsPage() {
                               </div>
                             </td>
                             <td className="py-3 pr-4 font-mono text-xs break-all">{r.value}</td>
+                            <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">{r.priority ?? "-"}</td>
                             <td className="py-3 text-right">
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(r.value)}>
                                 <Copy className="h-3.5 w-3.5" />
@@ -178,7 +180,7 @@ function DomainsPage() {
                             </td>
                           </tr>
                         )) : (
-                          <tr><td colSpan={4} className="py-3 text-xs text-muted-foreground">No records found. Delete and try adding the domain again.</td></tr>
+                          <tr><td colSpan={5} className="py-3 text-xs text-muted-foreground">No records found. Delete and try adding the domain again.</td></tr>
                         )}
                       </tbody>
                     </table>
