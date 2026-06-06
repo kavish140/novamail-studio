@@ -107,7 +107,7 @@ function DomainsPage() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={add}>Add domain</Button>
+              <Button onClick={addDomain}>Add domain</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
