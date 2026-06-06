@@ -71,7 +71,7 @@ export const getCodeSnippets = (apiUrl: string) => ({
   -H "Authorization: Bearer nm_live_••••••••" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "from": "you@yourdomain.com",
+    "from": "hello@mail.sitenova.dev",
     "to": "ada@lovelace.dev",
     "subject": "Welcome aboard",
     "html": "<h1>Hello, Ada</h1>"
@@ -85,7 +85,7 @@ const nova = new NovaMail(process.env.NOVAMAIL_API_KEY);
 nova.config.baseUrl = "${apiUrl.replace('/send-email', '')}";
 
 await nova.emails.send({
-  from: "you@yourdomain.com",
+  from: "hello@mail.sitenova.dev",
   to: "ada@lovelace.dev",
   subject: "Welcome aboard",
   html: "<h1>Hello, Ada</h1>",

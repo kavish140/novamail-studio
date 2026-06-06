@@ -55,15 +55,18 @@ serve(async (req) => {
     const fromDomain = from.split("@")[1];
 
     // 2. Verify the Domain belongs to the user and is verified
-    const { data: domainData, error: domainError } = await supabaseClient
-      .from("domains")
-      .select("id, status")
-      .eq("user_id", keyData.user_id)
-      .eq("name", fromDomain)
-      .single();
+    // We bypass this check if they are using the default global domain (mail.sitenova.dev)
+    if (fromDomain !== "mail.sitenova.dev") {
+      const { data: domainData, error: domainError } = await supabaseClient
+        .from("domains")
+        .select("id, status")
+        .eq("user_id", keyData.user_id)
+        .eq("name", fromDomain)
+        .single();
 
-    if (domainError || !domainData || domainData.status !== "verified") {
-      throw new Error(`Domain ${fromDomain} is not verified for your account.`);
+      if (domainError || !domainData || domainData.status !== "verified") {
+        throw new Error(`Domain ${fromDomain} is not verified for your account.`);
+      }
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
