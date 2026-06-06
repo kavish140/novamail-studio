@@ -33,30 +33,46 @@ function DomainsPage() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const add = async () => {
+  const addDomain = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!name.trim()) return toast.error("Enter a domain");
     
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return toast.error("You must be logged in");
+    setLoading(true);
 
-    const { data, error } = await supabase.functions.invoke("domains", {
-      body: { name: name.trim(), region: "us-east" }
-    });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiUrl = import.meta.env.VITE_SUPABASE_URL 
+        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
+        : "https://cbyqoakkewlvsgxwosza.supabase.co/functions/v1/domains";
 
-    if (error) {
-      toast.error(error.message || "Failed to add domain");
-      return;
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ name: name.trim(), region: "us-east" })
+      });
+
+      const responseData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(responseData.error || "Failed to add domain");
+      }
+
+      toast.success("Domain added — verify the DNS records to start sending");
+      setOpen(false);
+      setName("");
+      if (responseData.id) setExpanded(responseData.id);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
-
-    setName("");
-    setOpen(false);
-    if (data) setExpanded(data.id);
-    toast.success("Domain added — verify the DNS records to start sending");
-    refetch();
   };
-
-
 
   const remove = async (id: string) => {
     // Delete from DB. We can optionally also delete from Resend via an Edge Function, 
