@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Mail, MailCheck, MailX, MousePointerClick } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { StatusBadge } from "@/components/nova/status-badge";
 import { CodeBlock } from "@/components/nova/code-block";
 import { Button } from "@/components/ui/button";
@@ -12,7 +22,10 @@ export const Route = createFileRoute("/dashboard/")({
   head: () => ({
     meta: [
       { title: "Overview — NovaMail" },
-      { name: "description", content: "Email delivery overview, recent activity, and quick start." },
+      {
+        name: "description",
+        content: "Email delivery overview, recent activity, and quick start.",
+      },
     ],
   }),
   component: Overview,
@@ -21,60 +34,91 @@ export const Route = createFileRoute("/dashboard/")({
 function Overview() {
   const { data: emailLogs = [], isLoading } = useEmailLogs();
   const { data: user } = useUser();
-  const name = user?.user_metadata?.full_name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "there";
+  const name = user?.name?.split(" ")[0] || "there";
 
   const sentCount = emailLogs.length;
-  const deliveredCount = emailLogs.filter(l => l.status === 'delivered').length;
-  const bouncedCount = emailLogs.filter(l => l.status === 'bounced').length;
-  const openedCount = emailLogs.filter(l => (l.opens ?? 0) > 0).length;
-  const openRate = deliveredCount > 0 ? ((openedCount / deliveredCount) * 100).toFixed(1) + "%" : "0%";
+  const deliveredCount = emailLogs.filter((l) => l.status === "delivered").length;
+  const bouncedCount = emailLogs.filter((l) => l.status === "bounced").length;
+  const openedCount = emailLogs.filter((l) => (l.opens ?? 0) > 0).length;
+  const openRate =
+    deliveredCount > 0 ? ((openedCount / deliveredCount) * 100).toFixed(1) + "%" : "0%";
 
   const trendData = useMemo(() => {
     const last30Days = Array.from({ length: 30 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (29 - i));
       return {
-        day: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-        dateStr: d.toISOString().split('T')[0],
+        day: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        dateStr: d.toISOString().split("T")[0],
         sent: 0,
         delivered: 0,
         bounced: 0,
       };
     });
 
-    emailLogs.forEach(log => {
-      const d = new Date((log as any).rawCreatedAt || log.sentAt);
-      const dateStr = d.toISOString().split('T')[0];
-      const bucket = last30Days.find(b => b.dateStr === dateStr);
+    emailLogs.forEach((log) => {
+      const d = new Date(log.rawCreatedAt || log.sentAt);
+      const dateStr = d.toISOString().split("T")[0];
+      const bucket = last30Days.find((b) => b.dateStr === dateStr);
       if (bucket) {
         bucket.sent++;
-        if (log.status === 'delivered') bucket.delivered++;
-        if (log.status === 'bounced') bucket.bounced++;
+        if (log.status === "delivered") bucket.delivered++;
+        if (log.status === "bounced") bucket.bounced++;
       }
     });
 
     return last30Days;
   }, [emailLogs]);
 
-  const generateSpark = (key: 'sent' | 'delivered' | 'bounced') => {
+  const generateSpark = (key: "sent" | "delivered" | "bounced") => {
     // take the last 20 days for the sparkline
     return trendData.slice(-20).map((d, i) => ({ x: i, y: d[key] }));
   };
-  const sparkOpenRate = trendData.slice(-20).map((d, i) => ({ x: i, y: d.delivered > 0 ? (d.sent / d.delivered) : 0 })); // dummy open rate spark
+  const sparkOpenRate = trendData
+    .slice(-20)
+    .map((d, i) => ({ x: i, y: d.delivered > 0 ? d.sent / d.delivered : 0 })); // dummy open rate spark
 
   const stats = [
-    { label: "Sent (30d)", value: sentCount.toLocaleString(), delta: "+0.0%", icon: Mail, spark: generateSpark('sent') },
-    { label: "Delivered", value: deliveredCount.toLocaleString(), delta: "+0.0%", icon: MailCheck, spark: generateSpark('delivered') },
-    { label: "Bounced", value: bouncedCount.toLocaleString(), delta: "0.0%", icon: MailX, spark: generateSpark('bounced') },
-    { label: "Open rate", value: openRate, delta: "0.0%", icon: MousePointerClick, spark: sparkOpenRate },
+    {
+      label: "Sent (30d)",
+      value: sentCount.toLocaleString(),
+      delta: "+0.0%",
+      icon: Mail,
+      spark: generateSpark("sent"),
+    },
+    {
+      label: "Delivered",
+      value: deliveredCount.toLocaleString(),
+      delta: "+0.0%",
+      icon: MailCheck,
+      spark: generateSpark("delivered"),
+    },
+    {
+      label: "Bounced",
+      value: bouncedCount.toLocaleString(),
+      delta: "0.0%",
+      icon: MailX,
+      spark: generateSpark("bounced"),
+    },
+    {
+      label: "Open rate",
+      value: openRate,
+      delta: "0.0%",
+      icon: MousePointerClick,
+      spark: sparkOpenRate,
+    },
   ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back, {name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Here's how NovaMail is performing across your workspace.</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">
+            Welcome back, {name}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Here's how NovaMail is performing across your workspace.
+          </p>
         </div>
         <Button asChild>
           <Link to="/dashboard/keys">
@@ -92,12 +136,22 @@ function Overview() {
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <div className="font-display text-3xl font-semibold tracking-tight">{s.value}</div>
-              <div className={`text-xs ${s.delta.startsWith("-") ? "text-destructive" : "text-success"}`}>{s.delta}</div>
+              <div
+                className={`text-xs ${s.delta.startsWith("-") ? "text-destructive" : "text-success"}`}
+              >
+                {s.delta}
+              </div>
             </div>
             <div className="mt-3 h-12">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={s.spark}>
-                  <Line type="monotone" dataKey="y" stroke="var(--color-primary)" strokeWidth={2} dot={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="y"
+                    stroke="var(--color-primary)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -130,12 +184,46 @@ function Overview() {
                     <stop offset="95%" stopColor="var(--color-chart-2)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8 }} labelStyle={{ color: "var(--color-foreground)" }} />
-                <Area type="monotone" dataKey="sent" stroke="var(--color-primary)" strokeWidth={2} fill="url(#g1)" />
-                <Area type="monotone" dataKey="delivered" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#g2)" />
+                <CartesianGrid
+                  stroke="var(--color-border)"
+                  strokeDasharray="3 3"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="day"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                  }}
+                  labelStyle={{ color: "var(--color-foreground)" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="sent"
+                  stroke="var(--color-primary)"
+                  strokeWidth={2}
+                  fill="url(#g1)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="delivered"
+                  stroke="var(--color-chart-2)"
+                  strokeWidth={2}
+                  fill="url(#g2)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -145,7 +233,11 @@ function Overview() {
           <h2 className="font-display text-lg font-semibold">Quick start</h2>
           <p className="mt-1 text-xs text-muted-foreground">Send your first email in 30 seconds.</p>
           <div className="mt-4">
-            <CodeBlock language="bash" filename="terminal" code={`curl https://api.novamail.app/v1/email \\\n  -H "Authorization: Bearer nm_live_••••" \\\n  -d '{"to":"you@acme.dev","subject":"Hi","html":"<b>It works</b>"}'`} />
+            <CodeBlock
+              language="bash"
+              filename="terminal"
+              code={`curl https://api.novamail.app/v1/email \\\n  -H "Authorization: Bearer nm_live_••••" \\\n  -d '{"to":"you@acme.dev","subject":"Hi","html":"<b>It works</b>"}'`}
+            />
           </div>
           <Button asChild variant="outline" className="mt-4 w-full">
             <Link to="/docs">Open documentation</Link>
@@ -165,9 +257,13 @@ function Overview() {
         </div>
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading logs...</div>
+            <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">
+              Loading logs...
+            </div>
           ) : emailLogs.length === 0 ? (
-             <div className="p-8 text-center text-sm text-muted-foreground">No recent activity. Send your first email to see it here!</div>
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              No recent activity. Send your first email to see it here!
+            </div>
           ) : (
             <table className="w-full text-sm">
               <thead className="border-y border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -180,11 +276,16 @@ function Overview() {
               </thead>
               <tbody>
                 {emailLogs.slice(0, 6).map((row) => (
-                  <tr key={row.id} className="border-b border-border/60 last:border-0 hover:bg-surface-elevated/50">
+                  <tr
+                    key={row.id}
+                    className="border-b border-border/60 last:border-0 hover:bg-surface-elevated/50"
+                  >
                     <td className="px-6 py-3 text-xs text-muted-foreground">{row.sentAt}</td>
                     <td className="px-6 py-3 font-mono text-xs">{row.to}</td>
                     <td className="px-6 py-3">{row.subject}</td>
-                    <td className="px-6 py-3"><StatusBadge status={row.status as any} /></td>
+                    <td className="px-6 py-3">
+                      <StatusBadge status={row.status} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -31,7 +31,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useApiKeys } from "@/hooks/use-supabase";
 import { supabase } from "@/lib/supabase";
@@ -40,7 +46,10 @@ export const Route = createFileRoute("/dashboard/keys")({
   head: () => ({
     meta: [
       { title: "API Keys — NovaMail" },
-      { name: "description", content: "Create, reveal, and revoke API keys for your NovaMail workspace." },
+      {
+        name: "description",
+        content: "Create, reveal, and revoke API keys for your NovaMail workspace.",
+      },
     ],
   }),
   component: KeysPage,
@@ -59,9 +68,32 @@ function KeysPage() {
   const [name, setName] = useState("");
   const [env, setEnv] = useState<"test" | "live">("live");
 
+  const [renamingKey, setRenamingKey] = useState<ApiKey | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  const handleRename = async () => {
+    if (!renamingKey || !renameValue.trim()) return;
+    setIsRenaming(true);
+    try {
+      const { error } = await supabase
+        .from("api_keys")
+        .update({ name: renameValue.trim() })
+        .eq("id", renamingKey.id);
+      if (error) throw error;
+      toast.success("API key renamed");
+      setRenamingKey(null);
+      refetch();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
   const create = async () => {
     if (!name.trim()) return toast.error("Give your key a name");
-    
+
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return toast.error("You must be logged in");
 
@@ -75,12 +107,12 @@ function KeysPage() {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const keyHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
-    const { error } = await supabase.from('api_keys').insert({
+    const { error } = await supabase.from("api_keys").insert({
       user_id: userData.user.id,
       name: name.trim(),
       prefix,
       key_hash: keyHash,
-      env
+      env,
     });
 
     if (error) {
@@ -95,7 +127,7 @@ function KeysPage() {
   };
 
   const revoke = async (id: string) => {
-    const { error } = await supabase.from('api_keys').delete().eq('id', id);
+    const { error } = await supabase.from("api_keys").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
       return;
@@ -115,46 +147,79 @@ function KeysPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">API Keys</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Create scoped keys and revoke compromised ones in one click.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Create scoped keys and revoke compromised ones in one click.
+          </p>
         </div>
-        <Dialog open={creating} onOpenChange={(o) => { setCreating(o); if (!o) setCreatedKey(null); }}>
+        <Dialog
+          open={creating}
+          onOpenChange={(o) => {
+            setCreating(o);
+            if (!o) setCreatedKey(null);
+          }}
+        >
           <DialogTrigger asChild>
-            <Button><Plus className="mr-1.5 h-4 w-4" /> Create new key</Button>
+            <Button>
+              <Plus className="mr-1.5 h-4 w-4" /> Create new key
+            </Button>
           </DialogTrigger>
           <DialogContent>
             {createdKey ? (
               <>
                 <DialogHeader>
                   <DialogTitle>Your new API key</DialogTitle>
-                  <DialogDescription>Copy it now — for security reasons we won't show it again.</DialogDescription>
+                  <DialogDescription>
+                    Copy it now — for security reasons we won't show it again.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 font-mono text-sm">
                   <span className="flex-1 break-all">{createdKey}</span>
-                  <Button size="icon" variant="ghost" onClick={() => copy(createdKey)}><Copy className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => copy(createdKey)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
                 <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
                   <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  Store this key in your secrets manager. Never commit it to git or expose it in client code.
+                  Store this key in your secrets manager. Never commit it to git or expose it in
+                  client code.
                 </div>
                 <DialogFooter>
-                  <Button onClick={() => { setCreating(false); setCreatedKey(null); }}>Done</Button>
+                  <Button
+                    onClick={() => {
+                      setCreating(false);
+                      setCreatedKey(null);
+                    }}
+                  >
+                    Done
+                  </Button>
                 </DialogFooter>
               </>
             ) : (
               <>
                 <DialogHeader>
                   <DialogTitle>Create new API key</DialogTitle>
-                  <DialogDescription>Give the key a memorable name and choose an environment.</DialogDescription>
+                  <DialogDescription>
+                    Give the key a memorable name and choose an environment.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="kname" className="mb-1.5 block">Name</Label>
-                    <Input id="kname" placeholder="Production server" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Label htmlFor="kname" className="mb-1.5 block">
+                      Name
+                    </Label>
+                    <Input
+                      id="kname"
+                      placeholder="Production server"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label className="mb-1.5 block">Environment</Label>
                     <Select value={env} onValueChange={(v) => setEnv(v as "test" | "live")}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="live">Live</SelectItem>
                         <SelectItem value="test">Test</SelectItem>
@@ -163,7 +228,9 @@ function KeysPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreating(false)}>Cancel</Button>
+                  <Button variant="outline" onClick={() => setCreating(false)}>
+                    Cancel
+                  </Button>
                   <Button onClick={create}>Create key</Button>
                 </DialogFooter>
               </>
@@ -189,31 +256,64 @@ function KeysPage() {
               const shown = revealed[k.id];
               const display = shown ? `${k.prefix}${randSuffix()}` : `${k.prefix}••••••••`;
               return (
-                <tr key={k.id} className="border-b border-border/60 last:border-0 hover:bg-surface-elevated/50">
+                <tr
+                  key={k.id}
+                  className="border-b border-border/60 last:border-0 hover:bg-surface-elevated/50"
+                >
                   <td className="px-6 py-4 font-medium">{k.name}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <code className="rounded bg-background/60 px-2 py-1 font-mono text-xs">{display}</code>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setRevealed((r) => ({ ...r, [k.id]: !shown }))}>
-                        {shown ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      <code className="rounded bg-background/60 px-2 py-1 font-mono text-xs">
+                        {display}
+                      </code>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => setRevealed((r) => ({ ...r, [k.id]: !shown }))}
+                      >
+                        {shown ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(display)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => copy(display)}
+                      >
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </td>
-                  <td className="px-6 py-4"><StatusBadge status={k.env} /></td>
+                  <td className="px-6 py-4">
+                    <StatusBadge status={k.env} />
+                  </td>
                   <td className="px-6 py-4 text-xs text-muted-foreground">{k.createdAt}</td>
                   <td className="px-6 py-4 text-xs text-muted-foreground">{k.lastUsed}</td>
                   <td className="px-6 py-4 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="ghost" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => copy(display)}>Copy key</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast("Rename is a demo")}>Rename</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setPendingRevoke(k)}>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setRenamingKey(k);
+                            setRenameValue(k.name);
+                          }}
+                        >
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setPendingRevoke(k)}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" /> Revoke
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -231,17 +331,47 @@ function KeysPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke this key?</AlertDialogTitle>
             <AlertDialogDescription>
-              Any request using <code className="font-mono">{pendingRevoke?.prefix}••••</code> will start failing immediately. This action cannot be undone.
+              Any request using <code className="font-mono">{pendingRevoke?.prefix}••••</code> will
+              start failing immediately. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => pendingRevoke && revoke(pendingRevoke.id)}>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => pendingRevoke && revoke(pendingRevoke.id)}
+            >
               Revoke key
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!renamingKey} onOpenChange={(o) => !o && setRenamingKey(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename API Key</DialogTitle>
+            <DialogDescription>Give this API key a new memorable name.</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Name</Label>
+            <Input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenamingKey(null)}>
+              Cancel
+            </Button>
+            <Button disabled={isRenaming || !renameValue.trim()} onClick={handleRename}>
+              {isRenaming ? "Saving..." : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

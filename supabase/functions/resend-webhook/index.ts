@@ -10,16 +10,18 @@ async function signPayload(payload: string, secret: string) {
     encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
   const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-  return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 serve(async (req) => {
   try {
     const payloadText = await req.text();
-    
+
     // 1. Verify the webhook came from Resend
     const RESEND_WEBHOOK_SECRET = Deno.env.get("RESEND_WEBHOOK_SECRET");
     if (RESEND_WEBHOOK_SECRET) {
@@ -28,7 +30,7 @@ serve(async (req) => {
         "svix-timestamp": req.headers.get("svix-timestamp") || "",
         "svix-signature": req.headers.get("svix-signature") || "",
       };
-      
+
       try {
         const wh = new Webhook(RESEND_WEBHOOK_SECRET);
         wh.verify(payloadText, svixHeaders);
@@ -92,13 +94,10 @@ serve(async (req) => {
       if (payload.type === "email.delivered") newStatus = "delivered";
       if (payload.type === "email.bounced") newStatus = "bounced";
       if (payload.type === "email.opened") {
-         newStatus = "opened";
+        newStatus = "opened";
       }
 
-      await supabaseClient
-        .from("email_logs")
-        .update({ status: newStatus })
-        .eq("id", logData.id);
+      await supabaseClient.from("email_logs").update({ status: newStatus }).eq("id", logData.id);
 
       // Dispatch to the user's configured webhooks
       const { data: webhooks, error: webhookError } = await supabaseClient
@@ -112,25 +111,27 @@ serve(async (req) => {
       }
 
       // Dispatch events concurrently
-      await Promise.all(webhooks.map(async (wh) => {
-        // Check if user subscribed to this specific event type
-        if (!wh.events.includes(payload.type)) return;
+      await Promise.all(
+        webhooks.map(async (wh) => {
+          // Check if user subscribed to this specific event type
+          if (!wh.events.includes(payload.type)) return;
 
-        const signature = await signPayload(payloadText, wh.signing_secret);
-        
-        try {
-          await fetch(wh.endpoint_url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "novamail-signature": signature,
-            },
-            body: payloadText,
-          });
-        } catch (err) {
-          console.error("Failed to dispatch to user webhook:", wh.endpoint_url, err);
-        }
-      }));
+          const signature = await signPayload(payloadText, wh.signing_secret);
+
+          try {
+            await fetch(wh.endpoint_url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "novamail-signature": signature,
+              },
+              body: payloadText,
+            });
+          } catch (err) {
+            console.error("Failed to dispatch to user webhook:", wh.endpoint_url, err);
+          }
+        }),
+      );
 
       return new Response("Email webhook processed", { status: 200 });
     }

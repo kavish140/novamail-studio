@@ -34,8 +34,8 @@ serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    
-    // We use the service role key to query the DB because the incoming request 
+
+    // We use the service role key to query the DB because the incoming request
     // uses a NovaMail API key, not a Supabase JWT.
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -90,7 +90,7 @@ serve(async (req) => {
     });
 
     const resendData = await res.json();
-    
+
     if (!res.ok) {
       throw new Error(resendData.message || "Failed to send email via Resend");
     }
@@ -117,8 +117,9 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ error: errMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });

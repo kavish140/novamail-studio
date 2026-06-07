@@ -6,12 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-  plugins: [
-    TanStackRouterVite(),
-    tailwindcss(),
-    react(),
-    tsconfigPaths(),
-  ],
+  plugins: [TanStackRouterVite(), tailwindcss(), react(), tsconfigPaths()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

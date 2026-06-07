@@ -1,5 +1,14 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Bell, Gauge, KeyRound, ListChecks, Globe, Settings as SettingsIcon, Search, LogOut } from "lucide-react";
+import {
+  Bell,
+  Gauge,
+  KeyRound,
+  ListChecks,
+  Globe,
+  Settings as SettingsIcon,
+  Search,
+  LogOut,
+} from "lucide-react";
 import { NovaLogo } from "./logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,7 +42,7 @@ export function DashboardShell() {
   const { data: user } = useUser();
   const { data: emailLogs = [] } = useEmailLogs();
 
-  const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
+  const name = user?.name || user?.email?.split("@")[0] || "User";
   const initials = name.substring(0, 2).toUpperCase();
   const email = user?.email || "";
 
@@ -46,7 +55,9 @@ export function DashboardShell() {
     <div className="flex min-h-screen bg-background bg-grid">
       <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r border-border/60 bg-sidebar lg:flex">
         <div className="flex h-16 items-center px-6">
-          <Link to="/"><NovaLogo /></Link>
+          <Link to="/">
+            <NovaLogo />
+          </Link>
         </div>
         <nav className="flex-1 px-3">
           {nav.map((item) => {
@@ -70,11 +81,18 @@ export function DashboardShell() {
         </nav>
         <div className="m-3 rounded-xl border border-border/60 bg-surface-elevated p-4">
           <div className="text-xs text-muted-foreground">Monthly usage</div>
-          <div className="mt-1 text-sm font-semibold">{emailLogs.length.toLocaleString()} / 3,000</div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent" style={{ width: `${Math.min((emailLogs.length / 3000) * 100, 100)}%` }} />
+          <div className="mt-1 text-sm font-semibold">
+            {emailLogs.length.toLocaleString()} / 3,000
           </div>
-          <Button size="sm" variant="outline" className="mt-3 w-full">Upgrade plan</Button>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+              style={{ width: `${Math.min((emailLogs.length / 3000) * 100, 100)}%` }}
+            />
+          </div>
+          <Button size="sm" variant="outline" className="mt-3 w-full">
+            Upgrade plan
+          </Button>
         </div>
       </aside>
 
@@ -92,7 +110,9 @@ export function DashboardShell() {
                   onClick={() => setEnv(e)}
                   className={cn(
                     "rounded-md px-3 py-1 capitalize transition",
-                    env === e ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                    env === e
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {e}
@@ -105,13 +125,19 @@ export function DashboardShell() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full p-1 transition hover:bg-surface">
-                  {user?.user_metadata?.avatar_url ? (
+                  {user?.avatarUrl ? (
                     <Avatar className="h-8 w-8">
-                      <img src={user.user_metadata.avatar_url} alt="Avatar" className="h-full w-full object-cover rounded-full" />
+                      <img
+                        src={user.avatarUrl}
+                        alt="Avatar"
+                        className="h-full w-full object-cover rounded-full"
+                      />
                     </Avatar>
                   ) : (
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">{initials}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                        {initials}
+                      </AvatarFallback>
                     </Avatar>
                   )}
                 </button>
@@ -129,7 +155,10 @@ export function DashboardShell() {
                   <Link to="/docs">Documentation</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive cursor-pointer">
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-destructive cursor-pointer"
+                >
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

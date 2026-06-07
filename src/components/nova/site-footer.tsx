@@ -9,9 +9,13 @@ function FooterCol({ title, items }: { title: string; items: { label: string; hr
         {items.map((it) => (
           <li key={it.label}>
             {it.href.startsWith("/") && !it.href.includes("#") ? (
-              <Link to={it.href} className="transition hover:text-foreground">{it.label}</Link>
+              <Link to={it.href} className="transition hover:text-foreground">
+                {it.label}
+              </Link>
             ) : (
-              <a href={it.href} className="transition hover:text-foreground">{it.label}</a>
+              <a href={it.href} className="transition hover:text-foreground">
+                {it.label}
+              </a>
             )}
           </li>
         ))}
@@ -30,24 +34,33 @@ export function SiteFooter() {
             The transactional email API your engineering team will actually enjoy using.
           </p>
         </div>
-        <FooterCol title="Product" items={[
-          { label: "Features", href: "/#features" },
-          { label: "Pricing", href: "/#pricing" },
-          { label: "Docs", href: "/docs" },
-          { label: "Changelog", href: "#" },
-        ]} />
-        <FooterCol title="Company" items={[
-          { label: "About SiteNova", href: "https://sitenova.dev" },
-          { label: "Twitter / X", href: "https://x.com/Kavish_Ganatra" },
-          { label: "Instagram", href: "https://instagram.com/sitenova_web_design" },
-          { label: "Contact", href: "mailto:kavishganatra5@gmail.com" },
-        ]} />
-        <FooterCol title="Legal" items={[
-          { label: "Privacy", href: "#" },
-          { label: "Terms", href: "#" },
-          { label: "DPA", href: "#" },
-          { label: "Security", href: "#" },
-        ]} />
+        <FooterCol
+          title="Product"
+          items={[
+            { label: "Features", href: "/#features" },
+            { label: "Pricing", href: "/#pricing" },
+            { label: "Docs", href: "/docs" },
+            { label: "Changelog", href: "#" },
+          ]}
+        />
+        <FooterCol
+          title="Company"
+          items={[
+            { label: "About SiteNova", href: "https://sitenova.dev" },
+            { label: "Twitter / X", href: "https://x.com/Kavish_Ganatra" },
+            { label: "Instagram", href: "https://instagram.com/sitenova_web_design" },
+            { label: "Contact", href: "mailto:kavishganatra5@gmail.com" },
+          ]}
+        />
+        <FooterCol
+          title="Legal"
+          items={[
+            { label: "Privacy", href: "#" },
+            { label: "Terms", href: "#" },
+            { label: "DPA", href: "#" },
+            { label: "Security", href: "#" },
+          ]}
+        />
       </div>
       <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()} NovaMail Labs, Inc. Built for developers, everywhere.
