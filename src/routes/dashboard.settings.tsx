@@ -32,7 +32,7 @@ export const Route = createFileRoute("/dashboard/settings")({
 
 function SettingsPage() {
   const { data: user } = useUser();
-  const { data: teams } = useTeams();
+  const { data: teams, refetch: refetchTeams } = useTeams();
   const { data: webhooks } = useWebhooks();
 
   const initials = user?.name
@@ -98,14 +98,38 @@ function SettingsPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
 
   const handleInvite = async () => {
-    if (!inviteEmail || !teams?.[0]) return;
+    if (!inviteEmail) return;
     setIsInviting(true);
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-member`, {
+      let teamId = teams?.[0]?.id;
+      if (!teamId && user?.id) {
+        // Auto-create a team if the user doesn't have one
+        const { data: newTeam, error: teamError } = await supabase
+          .from("teams")
+          .insert({ name: "Personal Workspace" })
+          .select()
+          .single();
+          
+        if (teamError) throw teamError;
+        
+        await supabase.from("team_members").insert({
+          team_id: newTeam.id,
+          user_id: user.id,
+          role: "owner"
+        });
+        
+        
+        teamId = newTeam.id;
+        refetchTeams();
+      }
+
+      if (!teamId) throw new Error("Could not find or create a team.");
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL || "https://cbyqoakkewlvsgxwosza.supabase.co"}/functions/v1/invite-member`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +137,7 @@ function SettingsPage() {
         },
         body: JSON.stringify({
           email: inviteEmail,
-          teamId: teams[0].id,
+          teamId,
           role: "member",
         }),
       });
@@ -250,7 +274,12 @@ function SettingsPage() {
                   </div>
                 );
               })}
-              {!teams?.[0] && (
+              {teams?.length === 0 && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No team found. Invite a member to create your workspace!
+                </div>
+              )}
+              {teams === undefined && (
                 <div className="p-4 text-center text-sm text-muted-foreground">Loading team...</div>
               )}
             </div>
