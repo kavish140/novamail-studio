@@ -249,7 +249,7 @@ function Overview() {
         <div className="flex items-center justify-between p-6">
           <div>
             <h2 className="font-display text-lg font-semibold">Recent activity</h2>
-            <p className="text-xs text-muted-foreground">Latest sends across all environments</p>
+            <p className="text-xs text-muted-foreground">Latest sends</p>
           </div>
           <Button asChild variant="ghost" size="sm">
             <Link to="/dashboard/logs">View all logs →</Link>

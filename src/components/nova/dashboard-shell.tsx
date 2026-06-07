@@ -39,7 +39,6 @@ const nav: NavItem[] = [
 
 export function DashboardShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [env, setEnv] = useState<"test" | "live">("live");
 
   const { data: user } = useUser();
   const { data: emailLogs = [] } = useEmailLogs();
@@ -105,22 +104,6 @@ export function DashboardShell() {
             <Input placeholder="Search keys, recipients, logs…" className="pl-9 bg-surface/60" />
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <div className="hidden rounded-lg border border-border bg-surface p-1 text-xs md:flex">
-              {(["test", "live"] as const).map((e) => (
-                <button
-                  key={e}
-                  onClick={() => setEnv(e)}
-                  className={cn(
-                    "rounded-md px-3 py-1 capitalize transition",
-                    env === e
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
             <Button variant="ghost" size="icon" aria-label="Notifications">
               <Bell className="h-4 w-4" />
             </Button>

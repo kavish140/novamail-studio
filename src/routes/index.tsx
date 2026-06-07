@@ -254,7 +254,7 @@ function CodeShowcase() {
             {[
               "Typed SDKs with autocomplete for every parameter",
               "Idempotency keys built in — safe retries by default",
-              "Live test mode that mirrors production exactly",
+              "Detailed email delivery logs",
             ].map((p) => (
               <li key={p} className="flex items-start gap-2">
                 <Check className="mt-0.5 h-4 w-4 text-success" />

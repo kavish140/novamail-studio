@@ -95,15 +95,14 @@ function DocsPage() {
   -H "Authorization: Bearer nm_live_••••••••"`}
             />
             <p className="text-sm text-muted-foreground">
-              Never expose live keys in client code. Use a <code>nm_test_</code> key for local
-              development and CI.
+              Never expose your API keys in client code.
             </p>
           </Section>
 
           <Section id="quickstart" title="Quickstart">
             <ol className="ml-5 list-decimal space-y-2 text-muted-foreground mb-6">
               <li>Verify a sending domain on the Domains page.</li>
-              <li>Create an API key in your test environment.</li>
+              <li>Create an API key.</li>
               <li>Install the SDK or call the REST endpoint directly.</li>
               <li>Send your first email.</li>
             </ol>

@@ -2,7 +2,6 @@ export type ApiKey = {
   id: string;
   name: string;
   prefix: string;
-  env: "test" | "live";
   createdAt: string;
   lastUsed: string;
 };
@@ -50,24 +49,21 @@ export const apiKeys: ApiKey[] = [
     id: "k_2",
     name: "Marketing worker",
     prefix: "nm_live_q9Vc",
-    env: "live",
     createdAt: "2026-03-02",
     lastUsed: "2 hours ago",
   },
   {
     id: "k_3",
-    name: "Local dev — ada",
+    name: "Development",
     prefix: "nm_test_w1Pe",
-    env: "test",
-    createdAt: "2026-05-21",
+    createdAt: "2026-06-05",
     lastUsed: "yesterday",
   },
   {
     id: "k_4",
-    name: "CI pipeline",
+    name: "Staging server",
     prefix: "nm_test_r4Mz",
-    env: "test",
-    createdAt: "2026-01-18",
+    createdAt: "2026-06-01",
     lastUsed: "4 days ago",
   },
 ];

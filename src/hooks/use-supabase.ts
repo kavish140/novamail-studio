@@ -58,14 +58,12 @@ export function useApiKeys() {
           id: string;
           name: string;
           prefix: string;
-          env: "test" | "live";
           created_at: string;
           last_used: string | null;
         }) => ({
           id: row.id,
           name: row.name,
           prefix: row.prefix,
-          env: row.env,
           createdAt: new Date(row.created_at).toLocaleDateString(),
           lastUsed: row.last_used ? new Date(row.last_used).toLocaleDateString() : "Never",
         }),

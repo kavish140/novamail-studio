@@ -5,7 +5,6 @@ import { type ApiKey } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StatusBadge } from "@/components/nova/status-badge";
 import {
   Dialog,
   DialogContent,
@@ -31,13 +30,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useApiKeys } from "@/hooks/use-supabase";
 import { supabase } from "@/lib/supabase";
@@ -66,7 +58,6 @@ function KeysPage() {
   const [pendingRevoke, setPendingRevoke] = useState<ApiKey | null>(null);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [env, setEnv] = useState<"test" | "live">("live");
 
   const [renamingKey, setRenamingKey] = useState<ApiKey | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -98,8 +89,8 @@ function KeysPage() {
     if (!userData.user) return toast.error("You must be logged in");
 
     const rawSecret = randSuffix() + randSuffix() + randSuffix();
-    const full = `nm_${env}_${rawSecret}`;
-    const prefix = `nm_${env}_${rawSecret.slice(0, 4)}`;
+    const full = `nm_live_${rawSecret}`;
+    const prefix = `nm_live_${rawSecret.slice(0, 4)}`;
 
     // Hash the key using SHA-256
     const msgUint8 = new TextEncoder().encode(full);
@@ -112,7 +103,7 @@ function KeysPage() {
       name: name.trim(),
       prefix,
       key_hash: keyHash,
-      env,
+      env: "live",
     });
 
     if (error) {
@@ -199,7 +190,7 @@ function KeysPage() {
                 <DialogHeader>
                   <DialogTitle>Create new API key</DialogTitle>
                   <DialogDescription>
-                    Give the key a memorable name and choose an environment.
+                    Give the key a memorable name.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -213,18 +204,6 @@ function KeysPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
-                  </div>
-                  <div>
-                    <Label className="mb-1.5 block">Environment</Label>
-                    <Select value={env} onValueChange={(v) => setEnv(v as "test" | "live")}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="live">Live</SelectItem>
-                        <SelectItem value="test">Test</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
                 <DialogFooter>
@@ -245,7 +224,6 @@ function KeysPage() {
             <tr>
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Key</th>
-              <th className="px-6 py-3">Env</th>
               <th className="px-6 py-3">Created</th>
               <th className="px-6 py-3">Last used</th>
               <th className="px-6 py-3"></th>
@@ -287,9 +265,6 @@ function KeysPage() {
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={k.env} />
                   </td>
                   <td className="px-6 py-4 text-xs text-muted-foreground">{k.createdAt}</td>
                   <td className="px-6 py-4 text-xs text-muted-foreground">{k.lastUsed}</td>
