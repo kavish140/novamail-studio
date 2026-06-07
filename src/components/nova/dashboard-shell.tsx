@@ -8,6 +8,7 @@ import {
   Settings as SettingsIcon,
   Search,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 import { NovaLogo } from "./logo";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ const nav: NavItem[] = [
   { to: "/dashboard/logs", label: "Email Logs", icon: ListChecks },
   { to: "/dashboard/domains", label: "Domains", icon: Globe },
   { to: "/dashboard/settings", label: "Settings", icon: SettingsIcon },
+  { to: "/docs", label: "Documentation", icon: BookOpen },
 ];
 
 export function DashboardShell() {
