@@ -19,7 +19,9 @@ export const Route = createFileRoute("/docs")({
         property: "og:description",
         content: "Everything you need to integrate NovaMail in minutes.",
       },
+      { property: "og:url", content: "https://mail.sitenova.dev/docs" },
     ],
+    links: [{ rel: "canonical", href: "https://mail.sitenova.dev/docs" }],
   }),
   component: DocsPage,
 });

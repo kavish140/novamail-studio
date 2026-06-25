@@ -26,7 +26,9 @@ export const Route = createFileRoute("/login")({
       },
       { property: "og:title", content: "Sign in — NovaMail" },
       { property: "og:description", content: "Access your NovaMail dashboard." },
+      { property: "og:url", content: "https://mail.sitenova.dev/login" },
     ],
+    links: [{ rel: "canonical", href: "https://mail.sitenova.dev/login" }],
   }),
   component: LoginPage,
 });

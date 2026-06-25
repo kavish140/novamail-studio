@@ -31,7 +31,9 @@ export const Route = createFileRoute("/signup")({
         property: "og:description",
         content: "Free forever for hobby projects. No credit card required.",
       },
+      { property: "og:url", content: "https://mail.sitenova.dev/signup" },
     ],
+    links: [{ rel: "canonical", href: "https://mail.sitenova.dev/signup" }],
   }),
   component: SignupPage,
 });

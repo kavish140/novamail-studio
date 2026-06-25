@@ -46,7 +46,9 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Send automated email with a single API call. Built for developers.",
       },
+      { property: "og:url", content: "https://mail.sitenova.dev/" },
     ],
+    links: [{ rel: "canonical", href: "https://mail.sitenova.dev/" }],
   }),
   component: Landing,
 });
