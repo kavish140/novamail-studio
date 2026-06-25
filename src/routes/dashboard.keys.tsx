@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { Copy, Eye, EyeOff, MoreHorizontal, Plus, ShieldAlert, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Copy, MoreHorizontal, Plus, ShieldAlert, Trash2 } from "lucide-react";
 import { type ApiKey } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ function randSuffix() {
 function KeysPage() {
   const { data: keys = [], refetch } = useApiKeys();
   const [creating, setCreating] = useState(false);
-  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [isCreating, setIsCreating] = useState(false);
   const [pendingRevoke, setPendingRevoke] = useState<ApiKey | null>(null);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -85,36 +85,41 @@ function KeysPage() {
   const create = async () => {
     if (!name.trim()) return toast.error("Give your key a name");
 
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return toast.error("You must be logged in");
+    setIsCreating(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return toast.error("You must be logged in");
 
-    const rawSecret = randSuffix() + randSuffix() + randSuffix();
-    const full = `nm_live_${rawSecret}`;
-    const prefix = `nm_live_${rawSecret.slice(0, 4)}`;
+      const rawSecret = randSuffix() + randSuffix() + randSuffix();
+      const full = `nm_live_${rawSecret}`;
+      const prefix = `nm_live_${rawSecret.slice(0, 4)}`;
 
-    // Hash the key using SHA-256
-    const msgUint8 = new TextEncoder().encode(full);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const keyHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+      // Hash the key using SHA-256
+      const msgUint8 = new TextEncoder().encode(full);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const keyHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
-    const { error } = await supabase.from("api_keys").insert({
-      user_id: userData.user.id,
-      name: name.trim(),
-      prefix,
-      key_hash: keyHash,
-      env: "live",
-    });
+      const { error } = await supabase.from("api_keys").insert({
+        user_id: userData.user.id,
+        name: name.trim(),
+        prefix,
+        key_hash: keyHash,
+        env: "live",
+      });
 
-    if (error) {
-      toast.error(error.message);
-      return;
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      setCreatedKey(full);
+      setName("");
+      toast.success("API key created");
+      refetch();
+    } finally {
+      setIsCreating(false);
     }
-
-    setCreatedKey(full);
-    setName("");
-    toast.success("API key created");
-    refetch();
   };
 
   const revoke = async (id: string) => {
@@ -189,9 +194,7 @@ function KeysPage() {
               <>
                 <DialogHeader>
                   <DialogTitle>Create new API key</DialogTitle>
-                  <DialogDescription>
-                    Give the key a memorable name.
-                  </DialogDescription>
+                  <DialogDescription>Give the key a memorable name.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -203,6 +206,9 @@ function KeysPage() {
                       placeholder="Production server"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") create();
+                      }}
                     />
                   </div>
                 </div>
@@ -210,7 +216,9 @@ function KeysPage() {
                   <Button variant="outline" onClick={() => setCreating(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={create}>Create key</Button>
+                  <Button onClick={create} disabled={isCreating}>
+                    {isCreating ? "Creating..." : "Create key"}
+                  </Button>
                 </DialogFooter>
               </>
             )}
@@ -231,8 +239,7 @@ function KeysPage() {
           </thead>
           <tbody>
             {keys.map((k) => {
-              const shown = revealed[k.id];
-              const display = shown ? `${k.prefix}${randSuffix()}` : `${k.prefix}••••••••`;
+              const display = `${k.prefix}••••••••`;
               return (
                 <tr
                   key={k.id}
@@ -244,18 +251,6 @@ function KeysPage() {
                       <code className="rounded bg-background/60 px-2 py-1 font-mono text-xs">
                         {display}
                       </code>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7"
-                        onClick={() => setRevealed((r) => ({ ...r, [k.id]: !shown }))}
-                      >
-                        {shown ? (
-                          <EyeOff className="h-3.5 w-3.5" />
-                        ) : (
-                          <Eye className="h-3.5 w-3.5" />
-                        )}
-                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -297,6 +292,13 @@ function KeysPage() {
                 </tr>
               );
             })}
+            {keys.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-6 py-16 text-center text-sm text-muted-foreground">
+                  No API keys yet. Create your first key to get started.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

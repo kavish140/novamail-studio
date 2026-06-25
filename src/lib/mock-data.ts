@@ -4,6 +4,7 @@ export type ApiKey = {
   prefix: string;
   createdAt: string;
   lastUsed: string;
+  env?: string;
 };
 
 export type EmailLog = {

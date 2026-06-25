@@ -198,23 +198,27 @@ function DomainsPage() {
                 Use a subdomain like <code>mail.yourcompany.com</code> for best deliverability.
               </DialogDescription>
             </DialogHeader>
-            <div>
-              <Label htmlFor="domain" className="mb-1.5 block">
-                Domain
-              </Label>
-              <Input
-                id="domain"
-                placeholder="mail.acme.dev"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={addDomain}>Add domain</Button>
-            </DialogFooter>
+            <form onSubmit={addDomain}>
+              <div>
+                <Label htmlFor="domain" className="mb-1.5 block">
+                  Domain
+                </Label>
+                <Input
+                  id="domain"
+                  placeholder="mail.acme.dev"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <DialogFooter className="mt-4">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Adding..." : "Add domain"}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -334,6 +338,13 @@ function DomainsPage() {
             </div>
           );
         })}
+        {list.length === 0 && (
+          <div className="rounded-2xl border border-border/60 bg-surface/60 p-16 text-center">
+            <div className="text-sm text-muted-foreground">
+              No domains added yet. Add a sending domain to start sending emails.
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

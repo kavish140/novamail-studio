@@ -33,7 +33,7 @@ export const Route = createFileRoute("/dashboard/settings")({
 function SettingsPage() {
   const { data: user } = useUser();
   const { data: teams, refetch: refetchTeams } = useTeams();
-  const { data: webhooks } = useWebhooks();
+  const { data: webhooks, refetch: refetchWebhooks } = useWebhooks();
 
   const initials = user?.name
     ? user.name
@@ -99,6 +99,11 @@ function SettingsPage() {
 
   const handleInvite = async () => {
     if (!inviteEmail) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
     setIsInviting(true);
     try {
       const {
@@ -113,34 +118,36 @@ function SettingsPage() {
           .insert({ name: "Personal Workspace" })
           .select()
           .single();
-          
+
         if (teamError) throw teamError;
-        
+
         await supabase.from("team_members").insert({
           team_id: newTeam.id,
           user_id: user.id,
-          role: "owner"
+          role: "owner",
         });
-        
-        
+
         teamId = newTeam.id;
         refetchTeams();
       }
 
       if (!teamId) throw new Error("Could not find or create a team.");
 
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL || "https://cbyqoakkewlvsgxwosza.supabase.co"}/functions/v1/invite-member`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL || "https://cbyqoakkewlvsgxwosza.supabase.co"}/functions/v1/invite-member`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            email: inviteEmail,
+            teamId,
+            role: "member",
+          }),
         },
-        body: JSON.stringify({
-          email: inviteEmail,
-          teamId,
-          role: "member",
-        }),
-      });
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to invite");
@@ -161,6 +168,16 @@ function SettingsPage() {
 
   const handleCreateWebhook = async () => {
     if (!webhookUrl || !user) return;
+    try {
+      const url = new URL(webhookUrl);
+      if (url.protocol !== "https:") {
+        toast.error("Webhook URL must use HTTPS");
+        return;
+      }
+    } catch {
+      toast.error("Please enter a valid URL");
+      return;
+    }
     setIsCreatingWebhook(true);
     try {
       const signingSecret = "whsec_" + crypto.randomUUID().replace(/-/g, "");
@@ -172,7 +189,8 @@ function SettingsPage() {
         is_active: true,
       });
       if (error) throw error;
-      toast.success("Webhook endpoint created! Refresh to view.");
+      toast.success("Webhook endpoint created!");
+      refetchWebhooks();
       setWebhookOpen(false);
       setWebhookUrl("");
     } catch (error: unknown) {

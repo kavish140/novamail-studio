@@ -70,6 +70,34 @@ function Overview() {
     return last30Days;
   }, [emailLogs]);
 
+  const prevStats = useMemo(() => {
+    const prev30Days: string[] = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (59 - i));
+      prev30Days.push(d.toISOString().split("T")[0]);
+    }
+    let sent = 0,
+      delivered = 0,
+      bounced = 0;
+    emailLogs.forEach((log) => {
+      const d = new Date(log.rawCreatedAt || log.sentAt);
+      const dateStr = d.toISOString().split("T")[0];
+      if (prev30Days.includes(dateStr)) {
+        sent++;
+        if (log.status === "delivered") delivered++;
+        if (log.status === "bounced") bounced++;
+      }
+    });
+    return { sent, delivered, bounced };
+  }, [emailLogs]);
+
+  const calcDelta = (current: number, previous: number): string => {
+    if (previous === 0) return current > 0 ? "New" : "—";
+    const pct = (((current - previous) / previous) * 100).toFixed(1);
+    return Number(pct) >= 0 ? `+${pct}%` : `${pct}%`;
+  };
+
   const generateSpark = (key: "sent" | "delivered" | "bounced") => {
     // take the last 20 days for the sparkline
     return trendData.slice(-20).map((d, i) => ({ x: i, y: d[key] }));
@@ -82,28 +110,28 @@ function Overview() {
     {
       label: "Sent (30d)",
       value: sentCount.toLocaleString(),
-      delta: "+0.0%",
+      delta: calcDelta(sentCount, prevStats.sent),
       icon: Mail,
       spark: generateSpark("sent"),
     },
     {
       label: "Delivered",
       value: deliveredCount.toLocaleString(),
-      delta: "+0.0%",
+      delta: calcDelta(deliveredCount, prevStats.delivered),
       icon: MailCheck,
       spark: generateSpark("delivered"),
     },
     {
       label: "Bounced",
       value: bouncedCount.toLocaleString(),
-      delta: "0.0%",
+      delta: calcDelta(bouncedCount, prevStats.bounced),
       icon: MailX,
       spark: generateSpark("bounced"),
     },
     {
       label: "Open rate",
       value: openRate,
-      delta: "0.0%",
+      delta: "—",
       icon: MousePointerClick,
       spark: sparkOpenRate,
     },

@@ -117,10 +117,21 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
+    let status = 400;
+    if (
+      errMessage.includes("Auth Error") ||
+      errMessage.includes("Missing Authorization") ||
+      errMessage.includes("Unauthorized") ||
+      errMessage.includes("Only the team owner")
+    ) {
+      status = 403;
+    } else if (errMessage.includes("Missing RESEND_API_KEY")) {
+      status = 500;
+    }
     console.error("Invite Error:", errMessage);
     return new Response(JSON.stringify({ error: errMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status,
     });
   }
 });

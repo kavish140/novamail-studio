@@ -97,7 +97,28 @@ serve(async (req) => {
         newStatus = "opened";
       }
 
-      await supabaseClient.from("email_logs").update({ status: newStatus }).eq("id", logData.id);
+      const updatePayload: Record<string, unknown> = { status: newStatus };
+
+      if (payload.type === "email.opened") {
+        // Use raw SQL increment via rpc or just set opens + 1
+        const { data: currentLog } = await supabaseClient
+          .from("email_logs")
+          .select("opens")
+          .eq("id", logData.id)
+          .single();
+        updatePayload.opens = (currentLog?.opens || 0) + 1;
+      }
+
+      if (payload.type === "email.clicked") {
+        const { data: currentLog } = await supabaseClient
+          .from("email_logs")
+          .select("clicks")
+          .eq("id", logData.id)
+          .single();
+        updatePayload.clicks = (currentLog?.clicks || 0) + 1;
+      }
+
+      await supabaseClient.from("email_logs").update(updatePayload).eq("id", logData.id);
 
       // Dispatch to the user's configured webhooks
       const { data: webhooks, error: webhookError } = await supabaseClient

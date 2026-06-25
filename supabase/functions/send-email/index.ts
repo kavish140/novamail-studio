@@ -28,7 +28,12 @@ serve(async (req) => {
 
     const { to, from, subject, html } = await req.json();
 
-    if (!to || !from || !subject || !html) {
+    const toClean =
+      typeof to === "string" ? to.trim() : Array.isArray(to) ? to.map((t: string) => t.trim()) : to;
+    const fromClean = typeof from === "string" ? from.trim() : from;
+    const subjectClean = typeof subject === "string" ? subject.trim() : subject;
+
+    if (!toClean || !fromClean || !subjectClean || !html) {
       throw new Error("Missing required fields: to, from, subject, html");
     }
 
@@ -52,7 +57,7 @@ serve(async (req) => {
     }
 
     // Extract domain from the 'from' email
-    const fromDomain = from.split("@")[1];
+    const fromDomain = fromClean.split("@")[1];
 
     // 2. Verify the Domain belongs to the user and is verified
     // We bypass this check if they are using the default global domain (sitenova.dev)
@@ -82,9 +87,9 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from,
-        to,
-        subject,
+        from: fromClean,
+        to: toClean,
+        subject: subjectClean,
         html,
       }),
     });
@@ -98,9 +103,9 @@ serve(async (req) => {
     // 4. Log the email in Supabase
     await supabaseClient.from("email_logs").insert([
       {
-        to_email: Array.isArray(to) ? to.join(", ") : to,
-        from_email: from,
-        subject,
+        to_email: Array.isArray(toClean) ? toClean.join(", ") : toClean,
+        from_email: fromClean,
+        subject: subjectClean,
         status: "delivered", // Resend queues it, we'll optimistically set delivered or 'sent'
         resend_id: resendData.id,
         user_id: keyData.user_id,
@@ -119,9 +124,21 @@ serve(async (req) => {
     });
   } catch (error: unknown) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
+    let status = 400;
+    if (
+      errMessage.includes("Missing or invalid Authorization") ||
+      errMessage.includes("Invalid API Key")
+    ) {
+      status = 401;
+    } else if (
+      errMessage.includes("Server configuration error") ||
+      errMessage.includes("SUPABASE")
+    ) {
+      status = 500;
+    }
     return new Response(JSON.stringify({ error: errMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status,
     });
   }
 });

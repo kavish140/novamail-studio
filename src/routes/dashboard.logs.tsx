@@ -35,15 +35,24 @@ function LogsPage() {
   const { data: emailLogs = [], isLoading } = useEmailLogs();
   const [status, setStatus] = useState<string>("all");
   const [q, setQ] = useState("");
+  const [timeRange, setTimeRange] = useState<string>("30d");
   const [open, setOpen] = useState<EmailLog | null>(null);
 
   const filtered = useMemo(() => {
+    const now = new Date();
+    const cutoff = new Date();
+    if (timeRange === "24h") cutoff.setHours(now.getHours() - 24);
+    else if (timeRange === "7d") cutoff.setDate(now.getDate() - 7);
+    else cutoff.setDate(now.getDate() - 30);
+
     return emailLogs.filter((l) => {
+      const logDate = new Date(l.rawCreatedAt || l.sentAt);
+      if (logDate < cutoff) return false;
       if (status !== "all" && l.status !== status) return false;
       if (q && !`${l.to} ${l.subject}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [status, q, emailLogs]);
+  }, [status, q, emailLogs, timeRange]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -77,7 +86,7 @@ function LogsPage() {
             <SelectItem value="failed">Failed</SelectItem>
           </SelectContent>
         </Select>
-        <Select defaultValue="24h">
+        <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-32">
             <SelectValue />
           </SelectTrigger>
@@ -89,45 +98,51 @@ function LogsPage() {
         </Select>
       </div>
 
-      <div className="rounded-2xl border border-border/60 bg-surface/60 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-6 py-3">Time</th>
-              <th className="px-6 py-3">To</th>
-              <th className="px-6 py-3">Subject</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Opens</th>
-              <th className="px-6 py-3">Clicks</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((row) => (
-              <tr
-                key={row.id}
-                onClick={() => setOpen(row)}
-                className="cursor-pointer border-b border-border/60 last:border-0 hover:bg-surface-elevated/60"
-              >
-                <td className="px-6 py-3 text-xs text-muted-foreground">{row.sentAt}</td>
-                <td className="px-6 py-3 font-mono text-xs">{row.to}</td>
-                <td className="px-6 py-3">{row.subject}</td>
-                <td className="px-6 py-3">
-                  <StatusBadge status={row.status} />
-                </td>
-                <td className="px-6 py-3 text-xs">{row.opens}</td>
-                <td className="px-6 py-3 text-xs">{row.clicks}</td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
+      {isLoading ? (
+        <div className="rounded-2xl border border-border/60 bg-surface/60 p-16 text-center">
+          <div className="text-sm text-muted-foreground animate-pulse">Loading email logs...</div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-border/60 bg-surface/60 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
-                <td colSpan={6} className="px-6 py-16 text-center text-sm text-muted-foreground">
-                  No emails match your filters.
-                </td>
+                <th className="px-6 py-3">Time</th>
+                <th className="px-6 py-3">To</th>
+                <th className="px-6 py-3">Subject</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Opens</th>
+                <th className="px-6 py-3">Clicks</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filtered.map((row) => (
+                <tr
+                  key={row.id}
+                  onClick={() => setOpen(row)}
+                  className="cursor-pointer border-b border-border/60 last:border-0 hover:bg-surface-elevated/60"
+                >
+                  <td className="px-6 py-3 text-xs text-muted-foreground">{row.sentAt}</td>
+                  <td className="px-6 py-3 font-mono text-xs">{row.to}</td>
+                  <td className="px-6 py-3">{row.subject}</td>
+                  <td className="px-6 py-3">
+                    <StatusBadge status={row.status} />
+                  </td>
+                  <td className="px-6 py-3 text-xs">{row.opens}</td>
+                  <td className="px-6 py-3 text-xs">{row.clicks}</td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-16 text-center text-sm text-muted-foreground">
+                    No emails match your filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Sheet open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <SheetContent className="w-full max-w-lg sm:max-w-lg overflow-y-auto">

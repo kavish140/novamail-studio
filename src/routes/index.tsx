@@ -26,7 +26,9 @@ import { getCodeSnippets } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session) {
       throw redirect({ to: "/dashboard" });
     }

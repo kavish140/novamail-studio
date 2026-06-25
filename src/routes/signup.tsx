@@ -11,7 +11,9 @@ import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/signup")({
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session) {
       throw redirect({ to: "/dashboard" });
     }

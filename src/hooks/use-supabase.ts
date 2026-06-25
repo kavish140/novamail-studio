@@ -19,6 +19,9 @@ export function useUser() {
         avatarUrl: user.user_metadata?.avatar_url,
       };
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
   });
 }
 
@@ -30,6 +33,9 @@ export function useTeams() {
       if (error) throw error;
       return data;
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
   });
 }
 
@@ -41,6 +47,9 @@ export function useWebhooks() {
       if (error) throw error;
       return data;
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
   });
 }
 
@@ -69,6 +78,9 @@ export function useApiKeys() {
         }),
       ) as ApiKey[];
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
   });
 }
 
@@ -99,6 +111,9 @@ export function useDomains() {
         }),
       ) as Domain[];
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
   });
 }
 
@@ -134,5 +149,8 @@ export function useEmailLogs() {
         }),
       ) as EmailLog[];
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
   });
 }

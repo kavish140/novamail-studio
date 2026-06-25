@@ -46,6 +46,11 @@ serve(async (req) => {
 
       if (!name || !name.trim()) throw new Error("Domain name is required");
 
+      const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+      if (!domainRegex.test(name.trim())) {
+        throw new Error("Invalid domain name format");
+      }
+
       const res = await fetch("https://api.resend.com/domains", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
@@ -191,10 +196,20 @@ serve(async (req) => {
     });
   } catch (error: unknown) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
+    let status = 400;
+    if (
+      errMessage.includes("Auth Error") ||
+      errMessage === "Unauthorized" ||
+      errMessage.includes("Missing Authorization")
+    ) {
+      status = 401;
+    } else if (errMessage.includes("Missing RESEND_API_KEY")) {
+      status = 500;
+    }
     console.error("Edge Function Error:", errMessage);
     return new Response(JSON.stringify({ error: errMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status,
     });
   }
 });

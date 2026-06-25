@@ -10,7 +10,9 @@ import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session) {
       throw redirect({ to: "/dashboard" });
     }
@@ -83,9 +85,27 @@ function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           right={
-            <Link to="/login" className="text-xs text-muted-foreground hover:text-foreground">
+            <button
+              type="button"
+              onClick={async () => {
+                if (!email) {
+                  toast.error("Enter your email first");
+                  return;
+                }
+                try {
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/login`,
+                  });
+                  if (error) throw error;
+                  toast.success("Password reset email sent! Check your inbox.");
+                } catch (err: unknown) {
+                  toast.error(err instanceof Error ? err.message : "Failed to send reset email");
+                }
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
               Forgot?
-            </Link>
+            </button>
           }
         />
         <Button type="submit" className="w-full glow" disabled={loading}>
