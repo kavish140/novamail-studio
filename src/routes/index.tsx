@@ -307,8 +307,8 @@ const features = [
   },
   {
     icon: Code2,
-    title: "First-class SDKs",
-    body: "Hand-crafted libraries for Node, Python, Go, Ruby, PHP, and Elixir. All open source, all MIT.",
+    title: "First-class Python SDK",
+    body: "Hand-crafted Python library. Open source (MIT) and fully typed.",
   },
   {
     icon: Globe2,
@@ -451,7 +451,7 @@ function CodeShowcase() {
           </p>
           <ul className="mt-6 space-y-3 text-sm">
             {[
-              "Typed SDKs with autocomplete for every parameter",
+              "Typed Python SDK with autocomplete for every parameter",
               "Idempotency keys built in — safe retries by default",
               "Detailed email delivery logs",
             ].map((p) => (

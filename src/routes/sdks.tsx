@@ -50,73 +50,6 @@ const SEND_URL = "https://api.novamail.app/v1/send-email";
 
 const SDKS: Sdk[] = [
   {
-    lang: "Node.js",
-    tagline: "TypeScript-first SDK with full type inference and React Server Component support.",
-    install: "npm install novamail",
-    installLabel: "npm",
-    pkg: "novamail",
-    github: "https://github.com/novamail/novamail-node",
-    stars: "1.2k",
-    forks: "89",
-    color: "text-success",
-    bgColor: "bg-success/10 border-success/30",
-    features: [
-      "Full TypeScript types",
-      "Works with ESM & CJS",
-      "Next.js / Remix compatible",
-      "Promise-based API",
-      "Automatic retries",
-    ],
-    examples: [
-      {
-        label: "Send email",
-        filename: "send.ts",
-        language: "typescript",
-        code: `import { NovaMail } from 'novamail';
-
-const nova = new NovaMail({ apiKey: process.env.NOVAMAIL_API_KEY! });
-
-const { id } = await nova.emails.send({
-  from: 'hello@acme.dev',
-  to: 'ada@lovelace.dev',
-  subject: 'Welcome to Acme!',
-  html: '<h1>Welcome, Ada!</h1><p>Happy to have you.</p>',
-});
-
-console.log('Sent:', id);`,
-      },
-      {
-        label: "With template",
-        filename: "template.ts",
-        language: "typescript",
-        code: `const { id } = await nova.emails.send({
-  from: 'hello@acme.dev',
-  to: 'ada@lovelace.dev',
-  template_id: 'tmpl_welcome',
-  template_data: {
-    first_name: 'Ada',
-    app_name: 'Acme',
-    dashboard_url: 'https://acme.dev/dashboard',
-  },
-});`,
-      },
-      {
-        label: "Batch send",
-        filename: "batch.ts",
-        language: "typescript",
-        code: `const results = await nova.emails.sendBatch({
-  from: 'hello@acme.dev',
-  emails: [
-    { to: 'ada@lovelace.dev', subject: 'Hi Ada', html: '<b>Hello!</b>' },
-    { to: 'alan@turing.dev',  subject: 'Hi Alan', html: '<b>Hello!</b>' },
-  ],
-});
-
-console.log(\`Sent \${results.length} emails\`);`,
-      },
-    ],
-  },
-  {
     lang: "Python",
     tagline: "Async-first Python SDK with full type hints for sync and async codebases.",
     install: "pip install novamail",
@@ -172,170 +105,6 @@ asyncio.run(main())`,
       },
     ],
   },
-  {
-    lang: "Go",
-    tagline: "Idiomatic, zero-dependency Go client with structured error types.",
-    install: "go get github.com/novamail/novamail-go",
-    installLabel: "go get",
-    pkg: "novamail-go",
-    github: "https://github.com/novamail/novamail-go",
-    stars: "543",
-    forks: "41",
-    color: "text-primary",
-    bgColor: "bg-primary/10 border-primary/30",
-    features: [
-      "Zero external dependencies",
-      "Context-aware requests",
-      "Structured error types",
-      "net/http compatible",
-      "Goroutine-safe client",
-    ],
-    examples: [
-      {
-        label: "Send email",
-        filename: "main.go",
-        language: "go",
-        code: `package main
-
-import (
-    "fmt"
-    "github.com/novamail/novamail-go"
-)
-
-func main() {
-    client := novamail.New(os.Getenv("NOVAMAIL_API_KEY"))
-
-    resp, err := client.Emails.Send(context.Background(), &novamail.SendParams{
-        From:    "hello@acme.dev",
-        To:      "ada@lovelace.dev",
-        Subject: "Welcome to Acme!",
-        HTML:    "<h1>Welcome!</h1>",
-    })
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Println("Sent:", resp.ID)
-}`,
-      },
-    ],
-  },
-  {
-    lang: "Ruby",
-    tagline: "Ruby gem with Rails-friendly conventions and ActiveSupport integration.",
-    install: "gem install novamail",
-    installLabel: "gem",
-    pkg: "novamail",
-    github: "https://github.com/novamail/novamail-ruby",
-    stars: "312",
-    forks: "28",
-    color: "text-destructive",
-    bgColor: "bg-destructive/10 border-destructive/30",
-    features: [
-      "Rails Action Mailer adapter",
-      "Faraday-based HTTP",
-      "Configurable middleware",
-      "RSpec matchers included",
-      "Sidekiq integration",
-    ],
-    examples: [
-      {
-        label: "Send email",
-        filename: "send_email.rb",
-        language: "ruby",
-        code: `require 'novamail'
-
-nova = NovaMail::Client.new(api_key: ENV['NOVAMAIL_API_KEY'])
-
-result = nova.emails.send(
-  from: 'hello@acme.dev',
-  to: 'ada@lovelace.dev',
-  subject: 'Welcome to Acme!',
-  html: '<h1>Welcome!</h1>'
-)
-
-puts "Sent: #{result.id}"`,
-      },
-    ],
-  },
-  {
-    lang: "PHP",
-    tagline: "Composer package compatible with Laravel, Symfony, and bare PHP 8.1+.",
-    install: "composer require novamail/novamail-php",
-    installLabel: "composer",
-    pkg: "novamail/novamail-php",
-    github: "https://github.com/novamail/novamail-php",
-    stars: "287",
-    forks: "35",
-    color: "text-warning",
-    bgColor: "bg-warning/10 border-warning/30",
-    features: [
-      "PHP 8.1+ (readonly props, enums)",
-      "Laravel service provider",
-      "Guzzle HTTP client",
-      "PSR-3 logging",
-      "Composer auto-discovery",
-    ],
-    examples: [
-      {
-        label: "Send email",
-        filename: "send_email.php",
-        language: "php",
-        code: `<?php
-
-use NovaMail\\Client;
-
-$nova = new Client($_ENV['NOVAMAIL_API_KEY']);
-
-$result = $nova->emails->send([
-    'from'    => 'hello@acme.dev',
-    'to'      => 'ada@lovelace.dev',
-    'subject' => 'Welcome to Acme!',
-    'html'    => '<h1>Welcome!</h1>',
-]);
-
-echo 'Sent: ' . $result->id;`,
-      },
-    ],
-  },
-  {
-    lang: "Elixir",
-    tagline: "GenServer-based Elixir library for Phoenix and Bandit applications.",
-    install: '{:novamail, "~> 1.0"}',
-    installLabel: "mix",
-    pkg: "novamail",
-    github: "https://github.com/novamail/novamail-elixir",
-    stars: "198",
-    forks: "19",
-    color: "text-accent",
-    bgColor: "bg-accent/10 border-accent/30",
-    features: [
-      "GenServer connection pool",
-      "Phoenix mailer adapter",
-      "Bamboo compatible",
-      "Telemetry events",
-      "ExUnit test helpers",
-    ],
-    examples: [
-      {
-        label: "Send email",
-        filename: "send_email.ex",
-        language: "elixir",
-        code: `defmodule MyApp.Mailer do
-  use NovaMail.Client, api_key: System.get_env("NOVAMAIL_API_KEY")
-end
-
-# Send an email
-{:ok, %{id: id}} = MyApp.Mailer.send_email(%{
-  from: "hello@acme.dev",
-  to: "ada@lovelace.dev",
-  subject: "Welcome to Acme!",
-  html: "<h1>Welcome!</h1>"
-})
-
-IO.puts("Sent: #{id}")`,
-      },
-    ],
-  },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -349,14 +118,12 @@ function SdksPage() {
         {/* Hero */}
         <div className="text-center space-y-4">
           <Badge variant="secondary" className="mb-2">
-            Official SDKs
+            Official SDK
           </Badge>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">
-            SDKs for every stack
-          </h1>
+          <h1 className="font-display text-4xl font-semibold tracking-tight">Python SDK</h1>
           <p className="mx-auto max-w-lg text-muted-foreground">
-            All official NovaMail SDKs are open source (MIT), fully typed, and auto-published to the
-            respective package registry on every API release.
+            Our official Python SDK is open source (MIT), fully typed, and auto-published to PyPI on
+            every API release.
           </p>
           <div className="flex items-center justify-center gap-3 pt-2">
             <Button asChild size="sm">

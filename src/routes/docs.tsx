@@ -462,22 +462,7 @@ function TryItPanel() {
 // ─── SDK showcase cards ────────────────────────────────────────────────────────
 
 const SDK_LIST = [
-  { lang: "Node.js", pkg: "npm install novamail", color: "text-success", badge: "Official" },
   { lang: "Python", pkg: "pip install novamail", color: "text-info", badge: "Official" },
-  {
-    lang: "Go",
-    pkg: "go get github.com/novamail/novamail-go",
-    color: "text-primary",
-    badge: "Official",
-  },
-  { lang: "Ruby", pkg: "gem install novamail", color: "text-destructive", badge: "Official" },
-  {
-    lang: "PHP",
-    pkg: "composer require novamail/novamail-php",
-    color: "text-warning",
-    badge: "Official",
-  },
-  { lang: "Elixir", pkg: "mix novamail", color: "text-accent", badge: "Official" },
 ];
 
 // ─── Active section tracking ──────────────────────────────────────────────────
@@ -762,8 +747,8 @@ def webhook():
             {/* ── SDKs ── */}
             <Section id="sdks" title="SDKs">
               <p className="text-muted-foreground">
-                All official SDKs are open source (MIT), typed, and auto-published on every API
-                release.
+                Our official Python SDK is open source (MIT), fully typed, and auto-published to
+                PyPI on every API release.
               </p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {SDK_LIST.map((sdk) => (
