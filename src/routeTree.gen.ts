@@ -14,7 +14,6 @@ import { Route as SdksRouteImport } from './routes/sdks'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ComparisonRouteImport } from './routes/comparison'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
@@ -48,11 +47,6 @@ const DocsRoute = DocsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ComparisonRoute = ComparisonRouteImport.update({
-  id: '/comparison',
-  path: '/comparison',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChangelogRoute = ChangelogRouteImport.update({
@@ -104,7 +98,6 @@ const DashboardDomainsRoute = DashboardDomainsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/comparison': typeof ComparisonRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
@@ -121,7 +114,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/comparison': typeof ComparisonRoute
   '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
   '/sdks': typeof SdksRoute
@@ -138,7 +130,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
-  '/comparison': typeof ComparisonRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
@@ -157,7 +148,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/changelog'
-    | '/comparison'
     | '/dashboard'
     | '/docs'
     | '/login'
@@ -174,7 +164,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/changelog'
-    | '/comparison'
     | '/docs'
     | '/login'
     | '/sdks'
@@ -190,7 +179,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/changelog'
-    | '/comparison'
     | '/dashboard'
     | '/docs'
     | '/login'
@@ -208,7 +196,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
-  ComparisonRoute: typeof ComparisonRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   DocsRoute: typeof DocsRoute
   LoginRoute: typeof LoginRoute
@@ -251,13 +238,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/comparison': {
-      id: '/comparison'
-      path: '/comparison'
-      fullPath: '/comparison'
-      preLoaderRoute: typeof ComparisonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/changelog': {
@@ -353,7 +333,6 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChangelogRoute: ChangelogRoute,
-  ComparisonRoute: ComparisonRoute,
   DashboardRoute: DashboardRouteWithChildren,
   DocsRoute: DocsRoute,
   LoginRoute: LoginRoute,

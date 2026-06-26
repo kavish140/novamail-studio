@@ -5,10 +5,7 @@ import {
   Check,
   Code2,
   Gauge,
-  Globe2,
   KeyRound,
-  ShieldCheck,
-  Sparkles,
   Zap,
   Send,
   Loader2,
@@ -62,13 +59,9 @@ function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <Hero />
-      <LogoStrip />
       <Features />
       <HowItWorks />
       <CodeShowcase />
-      <MigrationSection />
-      <Stats />
-      <Pricing />
       <Faq />
       <CtaBand />
       <SiteFooter />
@@ -81,7 +74,7 @@ function Landing() {
 function LiveCodeDemo() {
   const apiUrl = import.meta.env.VITE_SUPABASE_URL
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`
-    : "https://api.novamail.app/v1/email";
+    : "https://mail.sitenova.dev/api/v1/email";
 
   const [to, setTo] = useState("ada@lovelace.dev");
   const [subject, setSubject] = useState("Hello from NovaMail");
@@ -176,7 +169,7 @@ function LiveCodeDemo() {
         </Button>
         {result === "success" && (
           <span className="flex items-center gap-1.5 text-xs text-success animate-fade-up">
-            <Check className="h-3.5 w-3.5" /> Delivered! Check the logs.
+            <Check className="h-3.5 w-3.5" /> Request sent! Sign up to see logs.
           </span>
         )}
         {result === "error" && (
@@ -203,22 +196,18 @@ function Hero() {
 
       <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-[1.05fr_1fr] lg:py-32">
         <div className="animate-fade-up">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            v2.0 — Streaming webhooks now in public beta
-          </span>
           <h1 className="mt-6 font-display text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
             The email API for <br />
             indie <span className="text-gradient">builders.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            3,000 free emails/mo — no daily cap, no credit card, no sales call. Generate a key,
-            paste three lines of code, and ship.
+            Generate an API key, paste three lines of code, and ship your transactional emails
+            instantly.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button asChild size="lg" className="glow">
               <Link to="/signup">
-                Start sending free <ArrowRight className="ml-2 h-4 w-4" />
+                Start sending <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
@@ -227,13 +216,13 @@ function Hero() {
           </div>
           <div className="mt-6 flex items-center gap-6 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-success" /> 3,000 free / mo — no daily cap
+              <Check className="h-3.5 w-3.5 text-success" /> Simple Python SDK
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-success" /> No credit card
+              <Check className="h-3.5 w-3.5 text-success" /> Reliable Delivery
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-success" /> SOC 2 Type II
+              <Check className="h-3.5 w-3.5 text-success" /> Developer Friendly
             </span>
           </div>
         </div>
@@ -242,11 +231,6 @@ function Hero() {
         <div className="relative animate-fade-up [animation-delay:120ms]">
           <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-primary/30 via-accent/20 to-transparent blur-3xl" />
           <LiveCodeDemo />
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <MiniStat label="p50 latency" value="84ms" />
-            <MiniStat label="Delivery" value="99.98%" />
-            <MiniStat label="Uptime" value="99.999%" />
-          </div>
         </div>
       </div>
     </section>
@@ -293,32 +277,22 @@ const features = [
   {
     icon: KeyRound,
     title: "Instant API keys",
-    body: "Spin up scoped, revocable keys per environment in one click. Per-key rate limits and IP allowlists included.",
+    body: "Spin up scoped, revocable keys per environment in one click.",
   },
   {
     icon: Zap,
     title: "Reliable delivery",
-    body: "Auto-warmed dedicated IP pools, smart retries, and bounce handling tuned by ML on billions of sends.",
+    body: "Powered by Resend infrastructure for world-class deliverability.",
   },
   {
     icon: Gauge,
     title: "Realtime logs",
-    body: "Every event — sent, opened, clicked, bounced — streamed to your dashboard and webhooks within 100ms.",
+    body: "Every event � sent, opened, clicked, bounced � streamed to your dashboard.",
   },
   {
     icon: Code2,
-    title: "First-class Python SDK",
-    body: "Hand-crafted Python library. Open source (MIT) and fully typed.",
-  },
-  {
-    icon: Globe2,
-    title: "Global edge",
-    body: "Send from 14 regions automatically. Your customers in Tokyo get a Tokyo egress.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Built for compliance",
-    body: "SOC 2 Type II, GDPR, HIPAA-ready. Bring your own KMS keys for full encryption control.",
+    title: "Python SDK",
+    body: "Install via pip install novamail for a seamless developer experience.",
   },
 ];
 
@@ -330,7 +304,7 @@ function Features() {
         title="Everything you need. Nothing you don't."
         subtitle="A focused email platform that gets out of your way."
       />
-      <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/60 md:grid-cols-3">
+      <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/60 md:grid-cols-2">
         {features.map((f) => (
           <div key={f.title} className="bg-background p-7 transition hover:bg-surface/60">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
@@ -473,7 +447,7 @@ function CodeShowcase() {
 function MigrationSection() {
   const apiUrl = import.meta.env.VITE_SUPABASE_URL
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`
-    : "https://api.novamail.app/v1/email";
+    : "https://mail.sitenova.dev/api/v1/email";
 
   const resendCode = `import { Resend } from 'resend';
 const resend = new Resend('re_live_••••••••');
@@ -753,23 +727,7 @@ function Faq() {
     },
     {
       q: "Do you support marketing emails?",
-      a: "NovaMail is built for transactional and operational email — receipts, password resets, magic links, alerts. We don't do marketing blasts.",
-    },
-    {
-      q: "Why no daily send cap on the free tier?",
-      a: "Resend caps free accounts at 100 emails per day even though the monthly limit is 3,000. That's annoying if you want to test a burst. NovaMail doesn't throttle you daily — send all 3,000 whenever you need them.",
-    },
-    {
-      q: "Can I bring my own dedicated IP?",
-      a: "Yes. Scale customers can warm dedicated IPs from any of our 14 regions, with smart routing back to shared pools during low-volume periods.",
-    },
-    {
-      q: "What happens if I exceed my plan limits?",
-      a: "Nothing breaks. We page you (and your team) when you cross 80%, and overage is billed at your plan's per-email rate. No surprises.",
-    },
-    {
-      q: "Is NovaMail SOC 2 compliant?",
-      a: "Yes, SOC 2 Type II. We're also GDPR-compliant and HIPAA-ready under signed BAA for Scale customers.",
+      a: "NovaMail is built for transactional and operational email � receipts, password resets, magic links, alerts. We don't do marketing blasts.",
     },
   ];
   return (

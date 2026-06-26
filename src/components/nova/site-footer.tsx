@@ -38,8 +38,6 @@ export function SiteFooter() {
           title="Product"
           items={[
             { label: "Features", href: "/#features" },
-            { label: "Pricing", href: "/#pricing" },
-            { label: "Compare", href: "/comparison" },
             { label: "Changelog", href: "/changelog" },
           ]}
         />
@@ -66,8 +64,6 @@ export function SiteFooter() {
           items={[
             { label: "Privacy", href: "#" },
             { label: "Terms", href: "#" },
-            { label: "DPA", href: "#" },
-            { label: "Security", href: "#" },
           ]}
         />
       </div>

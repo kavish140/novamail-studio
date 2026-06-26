@@ -16,14 +16,8 @@ export function SiteHeader() {
           <a href="/#features" className="transition hover:text-foreground">
             Features
           </a>
-          <a href="/#pricing" className="transition hover:text-foreground">
-            Pricing
-          </a>
           <Link to="/docs" className="transition hover:text-foreground">
             Docs
-          </Link>
-          <Link to="/comparison" className="transition hover:text-foreground">
-            Compare
           </Link>
           <Link to="/changelog" className="transition hover:text-foreground">
             Changelog
