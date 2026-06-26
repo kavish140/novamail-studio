@@ -45,15 +45,22 @@ serve(async (req) => {
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // 1. Verify the API Key
-    const keyHash = await hashKey(apiKey);
-    const { data: keyData, error: keyError } = await supabaseClient
-      .from("api_keys")
-      .select("user_id, id")
-      .eq("key_hash", keyHash)
-      .single();
+    let userId: string | null = null;
+    let keyId: string | null = null;
 
-    if (keyError || !keyData) {
-      throw new Error("Invalid API Key");
+    if (apiKey !== "nm_demo_public") {
+      const keyHash = await hashKey(apiKey);
+      const { data: keyData, error: keyError } = await supabaseClient
+        .from("api_keys")
+        .select("user_id, id")
+        .eq("key_hash", keyHash)
+        .single();
+
+      if (keyError || !keyData) {
+        throw new Error("Invalid API Key");
+      }
+      userId = keyData.user_id;
+      keyId = keyData.id;
     }
 
     // Extract domain from the 'from' email
@@ -62,10 +69,13 @@ serve(async (req) => {
     // 2. Verify the Domain belongs to the user and is verified
     // We bypass this check if they are using the default global domain (sitenova.dev)
     if (fromDomain !== "sitenova.dev") {
+      if (!userId) {
+        throw new Error("Demo key can only send from sitenova.dev");
+      }
       const { data: domainData, error: domainError } = await supabaseClient
         .from("domains")
         .select("id, status")
-        .eq("user_id", keyData.user_id)
+        .eq("user_id", userId)
         .eq("name", fromDomain)
         .single();
 
@@ -101,22 +111,26 @@ serve(async (req) => {
     }
 
     // 4. Log the email in Supabase
-    await supabaseClient.from("email_logs").insert([
-      {
-        to_email: Array.isArray(toClean) ? toClean.join(", ") : toClean,
-        from_email: fromClean,
-        subject: subjectClean,
-        status: "delivered", // Resend queues it, we'll optimistically set delivered or 'sent'
-        resend_id: resendData.id,
-        user_id: keyData.user_id,
-      },
-    ]);
+    if (userId) {
+      await supabaseClient.from("email_logs").insert([
+        {
+          to_email: Array.isArray(toClean) ? toClean.join(", ") : toClean,
+          from_email: fromClean,
+          subject: subjectClean,
+          status: "delivered", // Resend queues it, we'll optimistically set delivered or 'sent'
+          resend_id: resendData.id,
+          user_id: userId,
+        },
+      ]);
+    }
 
     // 5. Update last_used on the API key
-    await supabaseClient
-      .from("api_keys")
-      .update({ last_used: new Date().toISOString() })
-      .eq("id", keyData.id);
+    if (keyId) {
+      await supabaseClient
+        .from("api_keys")
+        .update({ last_used: new Date().toISOString() })
+        .eq("id", keyId);
+    }
 
     return new Response(JSON.stringify(resendData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
