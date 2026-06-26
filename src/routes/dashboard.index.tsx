@@ -1,5 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Mail, MailCheck, MailX, MousePointerClick } from "lucide-react";
+import {
+  ArrowUpRight,
+  Mail,
+  MailCheck,
+  MailX,
+  MousePointerClick,
+  Send,
+  Loader2,
+  Check,
+} from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -14,7 +23,19 @@ import {
 import { StatusBadge } from "@/components/nova/status-badge";
 import { CodeBlock } from "@/components/nova/code-block";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { useEmailLogs, useUser } from "@/hooks/use-supabase";
 
@@ -148,11 +169,14 @@ function Overview() {
             Here's how NovaMail is performing across your workspace.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/dashboard/keys">
-            Create new API key <ArrowUpRight className="ml-1.5 h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <SendTestEmailButton />
+          <Button asChild>
+            <Link to="/dashboard/keys">
+              Create new API key <ArrowUpRight className="ml-1.5 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -267,9 +291,14 @@ function Overview() {
               code={`curl https://api.novamail.app/v1/email \\\n  -H "Authorization: Bearer nm_live_••••" \\\n  -d '{"to":"you@acme.dev","subject":"Hi","html":"<b>It works</b>"}'`}
             />
           </div>
-          <Button asChild variant="outline" className="mt-4 w-full">
-            <Link to="/docs">Open documentation</Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" className="mt-4 flex-1">
+              <Link to="/docs">Docs</Link>
+            </Button>
+            <Button asChild variant="outline" className="mt-4 flex-1">
+              <Link to="/dashboard/templates">Templates</Link>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -331,5 +360,129 @@ function LegendDot({ color, label }: { color: string; label: string }) {
       <span className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
       {label}
     </span>
+  );
+}
+
+function SendTestEmailButton() {
+  const apiUrl = import.meta.env.VITE_SUPABASE_URL
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`
+    : "https://api.novamail.app/v1/email";
+
+  const [open, setOpen] = useState(false);
+  const [to, setTo] = useState("");
+  const [subject, setSubject] = useState("Test email from NovaMail");
+  const [body, setBody] = useState(
+    "<h1>It works!</h1><p>This is a test email sent from your NovaMail dashboard.</p>",
+  );
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<"success" | "error" | null>(null);
+
+  const handleSend = async () => {
+    if (!to.trim()) return toast.error("Enter a recipient email");
+    setSending(true);
+    setResult(null);
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer nm_demo_public",
+        },
+        body: JSON.stringify({
+          from: "test@novamail.app",
+          to: to.trim(),
+          subject: subject.trim() || "Test email from NovaMail",
+          html: body,
+        }),
+      });
+      if (res.ok) {
+        setResult("success");
+        toast.success("Test email sent! Check your inbox.");
+      } else {
+        setResult("error");
+        toast.error("Send failed — check your API key and domain settings.");
+      }
+    } catch {
+      setResult("error");
+      toast.error("Network error — couldn't reach the API.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setResult(null);
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Send className="mr-1.5 h-4 w-4" /> Send test email
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Send a test email</DialogTitle>
+          <DialogDescription>
+            Fire a real email through your NovaMail account to verify everything is wired up.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="test-to" className="mb-1.5 block">
+              To
+            </Label>
+            <Input
+              id="test-to"
+              type="email"
+              placeholder="you@example.com"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="test-subject" className="mb-1.5 block">
+              Subject
+            </Label>
+            <Input id="test-subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="test-body" className="mb-1.5 block">
+              HTML body
+            </Label>
+            <textarea
+              id="test-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={4}
+              className="w-full rounded-xl border border-border/60 bg-background/80 p-3 font-mono text-xs leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y"
+            />
+          </div>
+          {result === "success" && (
+            <div className="flex items-center gap-2 rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+              <Check className="h-4 w-4" />
+              Delivered! Check your inbox.
+            </div>
+          )}
+          {result === "error" && (
+            <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              Send failed. Connect an API key and verify your domain to send for real.
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSend} disabled={sending} className="gap-1.5">
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {sending ? "Sending…" : "Send test"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

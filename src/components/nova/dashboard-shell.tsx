@@ -9,6 +9,8 @@ import {
   Search,
   LogOut,
   BookOpen,
+  FileText,
+  Users,
 } from "lucide-react";
 import { NovaLogo } from "./logo";
 import { cn } from "@/lib/utils";
@@ -32,7 +34,9 @@ const nav: NavItem[] = [
   { to: "/dashboard", label: "Overview", icon: Gauge, exact: true },
   { to: "/dashboard/keys", label: "API Keys", icon: KeyRound },
   { to: "/dashboard/logs", label: "Email Logs", icon: ListChecks },
+  { to: "/dashboard/templates", label: "Templates", icon: FileText },
   { to: "/dashboard/domains", label: "Domains", icon: Globe },
+  { to: "/dashboard/team", label: "Team", icon: Users },
   { to: "/dashboard/settings", label: "Settings", icon: SettingsIcon },
   { to: "/docs", label: "Documentation", icon: BookOpen },
 ];

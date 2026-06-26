@@ -10,11 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SdksRouteImport } from './routes/sdks'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComparisonRouteImport } from './routes/comparison'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
+import { Route as DashboardTeamRouteImport } from './routes/dashboard.team'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardLogsRouteImport } from './routes/dashboard.logs'
 import { Route as DashboardKeysRouteImport } from './routes/dashboard.keys'
@@ -23,6 +28,11 @@ import { Route as DashboardDomainsRouteImport } from './routes/dashboard.domains
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SdksRoute = SdksRouteImport.update({
+  id: '/sdks',
+  path: '/sdks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -40,6 +50,16 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComparisonRoute = ComparisonRouteImport.update({
+  id: '/comparison',
+  path: '/comparison',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -48,6 +68,16 @@ const IndexRoute = IndexRouteImport.update({
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTemplatesRoute = DashboardTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTeamRoute = DashboardTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
@@ -73,83 +103,116 @@ const DashboardDomainsRoute = DashboardDomainsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/comparison': typeof ComparisonRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
+  '/sdks': typeof SdksRoute
   '/signup': typeof SignupRoute
   '/dashboard/domains': typeof DashboardDomainsRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/comparison': typeof ComparisonRoute
   '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
+  '/sdks': typeof SdksRoute
   '/signup': typeof SignupRoute
   '/dashboard/domains': typeof DashboardDomainsRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/comparison': typeof ComparisonRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
+  '/sdks': typeof SdksRoute
   '/signup': typeof SignupRoute
   '/dashboard/domains': typeof DashboardDomainsRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/changelog'
+    | '/comparison'
     | '/dashboard'
     | '/docs'
     | '/login'
+    | '/sdks'
     | '/signup'
     | '/dashboard/domains'
     | '/dashboard/keys'
     | '/dashboard/logs'
     | '/dashboard/settings'
+    | '/dashboard/team'
+    | '/dashboard/templates'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/changelog'
+    | '/comparison'
     | '/docs'
     | '/login'
+    | '/sdks'
     | '/signup'
     | '/dashboard/domains'
     | '/dashboard/keys'
     | '/dashboard/logs'
     | '/dashboard/settings'
+    | '/dashboard/team'
+    | '/dashboard/templates'
     | '/dashboard'
   id:
     | '__root__'
     | '/'
+    | '/changelog'
+    | '/comparison'
     | '/dashboard'
     | '/docs'
     | '/login'
+    | '/sdks'
     | '/signup'
     | '/dashboard/domains'
     | '/dashboard/keys'
     | '/dashboard/logs'
     | '/dashboard/settings'
+    | '/dashboard/team'
+    | '/dashboard/templates'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChangelogRoute: typeof ChangelogRoute
+  ComparisonRoute: typeof ComparisonRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   DocsRoute: typeof DocsRoute
   LoginRoute: typeof LoginRoute
+  SdksRoute: typeof SdksRoute
   SignupRoute: typeof SignupRoute
 }
 
@@ -160,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sdks': {
+      id: '/sdks'
+      path: '/sdks'
+      fullPath: '/sdks'
+      preLoaderRoute: typeof SdksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -183,6 +253,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comparison': {
+      id: '/comparison'
+      path: '/comparison'
+      fullPath: '/comparison'
+      preLoaderRoute: typeof ComparisonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -195,6 +279,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/templates': {
+      id: '/dashboard/templates'
+      path: '/templates'
+      fullPath: '/dashboard/templates'
+      preLoaderRoute: typeof DashboardTemplatesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/team': {
+      id: '/dashboard/team'
+      path: '/team'
+      fullPath: '/dashboard/team'
+      preLoaderRoute: typeof DashboardTeamRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/settings': {
@@ -233,6 +331,8 @@ interface DashboardRouteChildren {
   DashboardKeysRoute: typeof DashboardKeysRoute
   DashboardLogsRoute: typeof DashboardLogsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardTeamRoute: typeof DashboardTeamRoute
+  DashboardTemplatesRoute: typeof DashboardTemplatesRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
@@ -241,6 +341,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardKeysRoute: DashboardKeysRoute,
   DashboardLogsRoute: DashboardLogsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardTeamRoute: DashboardTeamRoute,
+  DashboardTemplatesRoute: DashboardTemplatesRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 
@@ -250,9 +352,12 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChangelogRoute: ChangelogRoute,
+  ComparisonRoute: ComparisonRoute,
   DashboardRoute: DashboardRouteWithChildren,
   DocsRoute: DocsRoute,
   LoginRoute: LoginRoute,
+  SdksRoute: SdksRoute,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport

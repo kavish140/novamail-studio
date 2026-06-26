@@ -22,9 +22,12 @@ export function SiteHeader() {
           <Link to="/docs" className="transition hover:text-foreground">
             Docs
           </Link>
-          <a href="/#faq" className="transition hover:text-foreground">
-            FAQ
-          </a>
+          <Link to="/comparison" className="transition hover:text-foreground">
+            Compare
+          </Link>
+          <Link to="/changelog" className="transition hover:text-foreground">
+            Changelog
+          </Link>
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
