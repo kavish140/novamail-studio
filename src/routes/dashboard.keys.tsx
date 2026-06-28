@@ -47,10 +47,6 @@ export const Route = createFileRoute("/dashboard/keys")({
   component: KeysPage,
 });
 
-function randSuffix() {
-  return Math.random().toString(36).slice(2, 10);
-}
-
 function KeysPage() {
   const { data: keys = [], refetch } = useApiKeys();
   const [creating, setCreating] = useState(false);
@@ -90,7 +86,12 @@ function KeysPage() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return toast.error("You must be logged in");
 
-      const rawSecret = randSuffix() + randSuffix() + randSuffix();
+      const randomBytes = new Uint8Array(24);
+      crypto.getRandomValues(randomBytes);
+      const rawSecret = Array.from(randomBytes)
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
       const full = `nm_live_${rawSecret}`;
       const prefix = `nm_live_${rawSecret.slice(0, 4)}`;
 

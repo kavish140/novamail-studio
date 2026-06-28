@@ -50,7 +50,7 @@ function SignupPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -58,6 +58,20 @@ function SignupPage() {
         },
       });
       if (error) throw error;
+
+      if (data?.user?.identities?.length === 0) {
+        toast.error("An account with this email already exists");
+        return;
+      }
+
+      if (data.user && !data.session) {
+        toast.success("Account created! Please check your email for a confirmation link.", {
+          duration: 10000,
+        });
+        // Don't redirect if email confirmation is required
+        return;
+      }
+
       toast.success("Account created successfully!");
       navigate({ to: "/dashboard" });
     } catch (error: unknown) {
@@ -129,7 +143,7 @@ function SignupPage() {
           {[
             "3,000 free emails every month",
             "No credit card required",
-            "SOC 2 Type II from day one",
+            "Real-time delivery logs",
           ].map((p) => (
             <li key={p} className="flex items-center gap-2">
               <Check className="h-3.5 w-3.5 text-success" />
@@ -142,13 +156,13 @@ function SignupPage() {
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
           By signing up you agree to our{" "}
-          <a href="#" className="underline-offset-4 hover:underline">
+          <Link to="/legal/terms" className="underline-offset-4 hover:underline">
             Terms
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a href="#" className="underline-offset-4 hover:underline">
+          <Link to="/legal/privacy" className="underline-offset-4 hover:underline">
             Privacy Policy
-          </a>
+          </Link>
           .
         </p>
       </form>

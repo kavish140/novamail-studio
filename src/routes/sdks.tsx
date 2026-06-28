@@ -46,7 +46,11 @@ interface Sdk {
   features: string[];
 }
 
-const SEND_URL = "https://api.novamail.app/v1/send-email";
+const API_BASE = import.meta.env.VITE_SUPABASE_URL
+  ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
+  : "https://your-project.supabase.co/functions/v1";
+
+const SEND_URL = `${API_BASE}/send-email`;
 
 const SDKS: Sdk[] = [
   {

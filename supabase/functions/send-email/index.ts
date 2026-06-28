@@ -37,8 +37,13 @@ serve(async (req) => {
       throw new Error("Missing required fields: to, from, subject, html");
     }
 
+    if (html.length > 2 * 1024 * 1024) {
+      throw new Error("HTML body too large (max 2MB)");
+    }
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const DEMO_API_KEY = Deno.env.get("DEMO_API_KEY");
 
     // We use the service role key to query the DB because the incoming request
     // uses a NovaMail API key, not a Supabase JWT.
@@ -48,7 +53,9 @@ serve(async (req) => {
     let userId: string | null = null;
     let keyId: string | null = null;
 
-    if (apiKey !== "nm_demo_public") {
+    if (DEMO_API_KEY && apiKey === DEMO_API_KEY) {
+      // Demo bypass for frontend
+    } else {
       const keyHash = await hashKey(apiKey);
       const { data: keyData, error: keyError } = await supabaseClient
         .from("api_keys")

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useUser, useTeams, useWebhooks } from "@/hooks/use-supabase";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -134,7 +135,7 @@ function SettingsPage() {
       if (!teamId) throw new Error("Could not find or create a team.");
 
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || "https://cbyqoakkewlvsgxwosza.supabase.co"}/functions/v1/invite-member`,
+        `${import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co"}/functions/v1/invite-member`,
         {
           method: "POST",
           headers: {
@@ -364,7 +365,24 @@ function SettingsPage() {
                     </Badge>
                   </div>
                   <FieldRow label="Signing secret">
-                    <Input readOnly defaultValue={wh.signing_secret} className="font-mono" />
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="password"
+                        readOnly
+                        defaultValue={wh.signing_secret}
+                        className="font-mono flex-1"
+                      />
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(wh.signing_secret);
+                          toast.success("Secret copied");
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </FieldRow>
                 </div>
               ),

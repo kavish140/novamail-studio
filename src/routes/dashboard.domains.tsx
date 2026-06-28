@@ -30,13 +30,6 @@ export const Route = createFileRoute("/dashboard/domains")({
   component: DomainsPage,
 });
 
-const records = (host: string) => [
-  { type: "TXT", host: `_novamail.${host}`, value: "v=novamail1; k=rsa; p=MIIBIj…AQAB" },
-  { type: "MX", host: `mail.${host}`, value: "inbound.novamail.app (priority 10)" },
-  { type: "CNAME", host: `nm1._domainkey.${host}`, value: "nm1.dkim.novamail.app" },
-  { type: "CNAME", host: `nm2._domainkey.${host}`, value: "nm2.dkim.novamail.app" },
-];
-
 function DomainsPage() {
   const { data: list = [], refetch } = useDomains();
   const [open, setOpen] = useState(false);
@@ -64,7 +57,7 @@ function DomainsPage() {
 
       const apiUrl = import.meta.env.VITE_SUPABASE_URL
         ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
-        : "https://cbyqoakkewlvsgxwosza.supabase.co/functions/v1/domains";
+        : "https://your-project.supabase.co/functions/v1/domains";
 
       const res = await fetch(apiUrl, {
         method: "POST",
@@ -110,7 +103,7 @@ function DomainsPage() {
 
       const baseUrl = import.meta.env.VITE_SUPABASE_URL
         ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
-        : "https://cbyqoakkewlvsgxwosza.supabase.co/functions/v1/domains";
+        : "https://your-project.supabase.co/functions/v1/domains";
 
       const res = await fetch(`${baseUrl}/verify`, {
         method: "POST",
@@ -148,7 +141,7 @@ function DomainsPage() {
 
       const baseUrl = import.meta.env.VITE_SUPABASE_URL
         ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/domains`
-        : "https://cbyqoakkewlvsgxwosza.supabase.co/functions/v1/domains";
+        : "https://your-project.supabase.co/functions/v1/domains";
 
       const res = await fetch(`${baseUrl}?id=${id}`, {
         method: "DELETE",

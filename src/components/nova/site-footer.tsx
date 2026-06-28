@@ -13,7 +13,12 @@ function FooterCol({ title, items }: { title: string; items: { label: string; hr
                 {it.label}
               </Link>
             ) : (
-              <a href={it.href} className="transition hover:text-foreground">
+              <a
+                href={it.href}
+                className="transition hover:text-foreground"
+                target={it.href.startsWith("http") ? "_blank" : undefined}
+                rel={it.href.startsWith("http") ? "noopener noreferrer" : undefined}
+              >
                 {it.label}
               </a>
             )}
@@ -56,14 +61,15 @@ export function SiteFooter() {
             { label: "About SiteNova", href: "https://sitenova.dev" },
             { label: "Twitter / X", href: "https://x.com/Kavish_Ganatra" },
             { label: "Instagram", href: "https://instagram.com/sitenova_web_design" },
-            { label: "Contact", href: "mailto:kavishganatra5@gmail.com" },
+            { label: "YouTube", href: "https://www.youtube.com/@SiteNova_Web_Design" },
+            { label: "Contact", href: "mailto:support@sitenova.dev" },
           ]}
         />
         <FooterCol
           title="Legal"
           items={[
-            { label: "Privacy", href: "#" },
-            { label: "Terms", href: "#" },
+            { label: "Privacy", href: "/legal/privacy" },
+            { label: "Terms", href: "/legal/terms" },
           ]}
         />
       </div>

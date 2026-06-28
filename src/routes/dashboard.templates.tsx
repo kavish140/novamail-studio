@@ -30,6 +30,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useTemplates, useUser } from "@/hooks/use-supabase";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/templates")({
   head: () => ({
@@ -64,33 +66,7 @@ const DEFAULT_HTML = `<div style="font-family: sans-serif; max-width: 600px; mar
   </a>
 </div>`;
 
-const INITIAL_TEMPLATES: Template[] = [
-  {
-    id: "tmpl_welcome",
-    name: "Welcome email",
-    subject: "Welcome to {{app_name}}, {{first_name}}!",
-    html: DEFAULT_HTML,
-    updatedAt: "2 days ago",
-  },
-  {
-    id: "tmpl_password_reset",
-    name: "Password reset",
-    subject: "Reset your password",
-    html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
-  <h1 style="color: #1a1a2e; margin-bottom: 16px;">Password Reset</h1>
-  <p style="color: #555; line-height: 1.6;">
-    We received a request to reset the password for your account. Click the button below to set a new password.
-  </p>
-  <a href="{{reset_url}}" style="display: inline-block; margin-top: 24px; padding: 12px 24px; background: #e74c3c; color: white; text-decoration: none; border-radius: 8px;">
-    Reset Password
-  </a>
-  <p style="color: #999; margin-top: 24px; font-size: 13px;">
-    If you didn't request this, you can safely ignore this email.
-  </p>
-</div>`,
-    updatedAt: "5 days ago",
-  },
-];
+const INITIAL_TEMPLATES: Template[] = [];
 
 // ─── Template Editor Dialog ─────────────────────────────────────────────────
 
@@ -209,33 +185,73 @@ function TemplateEditor({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function TemplatesPage() {
-  const [templates, setTemplates] = useState<Template[]>(INITIAL_TEMPLATES);
+  const { data: user } = useUser();
+  const { data: dbTemplates, refetch } = useTemplates();
+  const templates = (dbTemplates || []).map(
+    (t: { id: string; name: string; subject: string; html: string; updated_at: string }) => ({
+      ...t,
+      updatedAt: new Date(t.updated_at).toLocaleDateString(),
+    }),
+  ) as Template[];
+
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Template | undefined>(undefined);
   const [deleting, setDeleting] = useState<Template | null>(null);
   const [previewing, setPreviewing] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = (data: Omit<Template, "id" | "updatedAt">) => {
-    if (editing) {
-      setTemplates((prev) =>
-        prev.map((t) => (t.id === editing.id ? { ...t, ...data, updatedAt: "Just now" } : t)),
-      );
-      toast.success("Template updated");
-    } else {
-      const slug = data.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .slice(0, 30);
-      setTemplates((prev) => [{ id: `tmpl_${slug}`, ...data, updatedAt: "Just now" }, ...prev]);
-      toast.success("Template created");
+  const handleSave = async (data: Omit<Template, "id" | "updatedAt">) => {
+    if (!user) return toast.error("You must be logged in");
+    setIsSaving(true);
+    try {
+      if (editing) {
+        const { error } = await supabase
+          .from("templates")
+          .update({
+            name: data.name,
+            subject: data.subject,
+            html: data.html,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", editing.id);
+        if (error) throw error;
+        toast.success("Template updated");
+      } else {
+        const slug = data.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .slice(0, 30);
+        const id = `tmpl_${slug}_${Math.random().toString(36).slice(2, 6)}`;
+        const { error } = await supabase.from("templates").insert({
+          id,
+          user_id: user.id,
+          name: data.name,
+          subject: data.subject,
+          html: data.html,
+        });
+        if (error) throw error;
+        toast.success("Template created");
+      }
+      refetch();
+      setEditing(undefined);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to save template");
+    } finally {
+      setIsSaving(false);
     }
-    setEditing(undefined);
   };
 
-  const handleDelete = (t: Template) => {
-    setTemplates((prev) => prev.filter((x) => x.id !== t.id));
-    setDeleting(null);
-    toast.success("Template deleted");
+  const handleDelete = async (t: Template) => {
+    try {
+      const { error } = await supabase.from("templates").delete().eq("id", t.id);
+      if (error) throw error;
+      toast.success("Template deleted");
+      refetch();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete template");
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const copy = (text: string) => {

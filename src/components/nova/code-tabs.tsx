@@ -5,7 +5,7 @@ import { getCodeSnippets } from "@/lib/mock-data";
 export function CodeTabs({ className }: { className?: string }) {
   const apiUrl = import.meta.env.VITE_SUPABASE_URL
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`
-    : "https://cbyqoakkewlvsgxwosza.supabase.co/functions/v1/send-email";
+    : "https://your-project.supabase.co/functions/v1/send-email";
   const snippets = getCodeSnippets(apiUrl);
 
   return (

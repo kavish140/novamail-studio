@@ -95,20 +95,30 @@ export function DashboardShell() {
               style={{ width: `${Math.min((emailLogs.length / 3000) * 100, 100)}%` }}
             />
           </div>
-          <Button size="sm" variant="outline" className="mt-3 w-full">
-            Upgrade plan
+          <Button asChild size="sm" variant="outline" className="mt-3 w-full">
+            <Link to="/dashboard/settings">Upgrade plan</Link>
           </Button>
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/60 bg-background/70 px-6 backdrop-blur">
-          <div className="relative hidden flex-1 max-w-md md:block">
+          <div className="relative hidden flex-1 max-w-md md:block opacity-50">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search keys, recipients, logs…" className="pl-9 bg-surface/60" />
+            <Input
+              placeholder="Search keys, recipients, logs…"
+              className="pl-9 bg-surface/60"
+              disabled
+            />
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="ghost" size="icon" aria-label="Notifications">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Notifications"
+              disabled
+              className="opacity-50"
+            >
               <Bell className="h-4 w-4" />
             </Button>
             <DropdownMenu>

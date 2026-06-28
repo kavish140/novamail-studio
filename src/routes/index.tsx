@@ -58,12 +58,14 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <Hero />
-      <Features />
-      <HowItWorks />
-      <CodeShowcase />
-      <Faq />
-      <CtaBand />
+      <main>
+        <Hero />
+        <Features />
+        <HowItWorks />
+        <CodeShowcase />
+        <Faq />
+        <CtaBand />
+      </main>
       <SiteFooter />
     </div>
   );
@@ -243,31 +245,6 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       <div className="font-display text-lg font-semibold">{value}</div>
       <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
     </div>
-  );
-}
-
-// ─── Logo strip ───────────────────────────────────────────────────────────────
-
-function LogoStrip() {
-  const logos = ["HELIX", "VERTEX", "NORTHWIND", "FERMION", "PARALLAX", "ATLAS·IO"];
-  return (
-    <section className="border-y border-border/60 bg-surface/30">
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          Trusted by teams shipping at scale
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-70">
-          {logos.map((l) => (
-            <span
-              key={l}
-              className="font-display text-lg font-semibold tracking-[0.2em] text-muted-foreground"
-            >
-              {l}
-            </span>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -602,10 +579,10 @@ function Stats() {
   return (
     <section className="mx-auto max-w-7xl px-6 py-20">
       <div className="grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/60 sm:grid-cols-2 lg:grid-cols-4">
-        <AnimatedStat value={12} suffix="B+" label="emails sent / year" />
-        <AnimatedStat value={99999} suffix="%" label="API uptime" />
-        <AnimatedStat value={84} suffix="ms" label="median send latency" />
-        <AnimatedStat value={14} label="global regions" />
+        <AnimatedStat value={3} suffix="M+" label="emails sent / month" />
+        <AnimatedStat value={99} suffix=".99%" label="API uptime" />
+        <AnimatedStat value={112} suffix="ms" label="median send latency" />
+        <AnimatedStat value={6} label="global regions" />
       </div>
     </section>
   );
@@ -702,17 +679,6 @@ function Pricing() {
           </div>
         ))}
       </div>
-
-      {/* Compare link */}
-      <div className="mt-8 text-center">
-        <Link
-          to="/comparison"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition"
-        >
-          See how we compare to Resend, EmailJS, and SendGrid
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
     </section>
   );
 }
@@ -736,7 +702,7 @@ function Faq() {
         <SectionHead
           eyebrow="FAQ"
           title="Questions, answered."
-          subtitle="Still curious? Email kavishganatra5@gmail.com — a human will reply."
+          subtitle="Still curious? Email support@sitenova.dev — a human will reply."
         />
         <Accordion type="single" collapsible className="mt-10">
           {items.map((it) => (

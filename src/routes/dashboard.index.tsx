@@ -288,7 +288,7 @@ function Overview() {
             <CodeBlock
               language="bash"
               filename="terminal"
-              code={`curl https://api.novamail.app/v1/email \\\n  -H "Authorization: Bearer nm_live_••••" \\\n  -d '{"to":"you@acme.dev","subject":"Hi","html":"<b>It works</b>"}'`}
+              code={`curl https://your-project.supabase.co/functions/v1/send-email \\\n  -H "Authorization: Bearer nm_live_••••" \\\n  -d '{"to":"you@acme.dev","subject":"Hi","html":"<b>It works</b>"}'`}
             />
           </div>
           <div className="flex gap-2">
@@ -366,7 +366,7 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 function SendTestEmailButton() {
   const apiUrl = import.meta.env.VITE_SUPABASE_URL
     ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`
-    : "https://api.novamail.app/v1/email";
+    : "https://your-project.supabase.co/functions/v1/send-email";
 
   const [open, setOpen] = useState(false);
   const [to, setTo] = useState("");

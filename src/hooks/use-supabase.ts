@@ -154,3 +154,20 @@ export function useEmailLogs() {
     retry: 1,
   });
 }
+
+export function useTemplates() {
+  return useQuery({
+    queryKey: ["templates"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("templates")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: 1,
+  });
+}

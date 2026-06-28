@@ -53,7 +53,7 @@ export const Route = createFileRoute("/docs")({
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
-  : "https://api.novamail.app/v1";
+  : "https://your-project.supabase.co/functions/v1";
 
 const SEND_URL = `${API_BASE}/send-email`;
 
