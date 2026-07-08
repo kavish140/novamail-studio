@@ -26,7 +26,7 @@ serve(async (req) => {
     }
     const apiKey = authHeader.replace("Bearer ", "").trim();
 
-    const { to, from, subject, html } = await req.json();
+    const { to, from, subject, html, attachments } = await req.json();
 
     const toClean =
       typeof to === "string" ? to.trim() : Array.isArray(to) ? to.map((t: string) => t.trim()) : to;
@@ -81,13 +81,37 @@ serve(async (req) => {
       }
       const { data: domainData, error: domainError } = await supabaseClient
         .from("domains")
-        .select("id, status")
+        .select("id, status, is_approved")
         .eq("user_id", userId)
         .eq("name", fromDomain)
         .single();
 
       if (domainError || !domainData || domainData.status !== "verified") {
         throw new Error(`Domain ${fromDomain} is not verified for your account.`);
+      }
+      if (!domainData.is_approved) {
+        throw new Error(`Domain ${fromDomain} is pending administrative approval.`);
+      }
+    }
+
+    // Rate Limiting: Check emails sent in the last 24 hours
+    if (userId) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const { count, error: countError } = await supabaseClient
+        .from("email_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("created_at", yesterday.toISOString());
+
+      if (countError) {
+        throw new Error("Failed to check rate limits");
+      }
+      if (count !== null && count >= 50) {
+        throw new Error(
+          "Daily email sending limit exceeded (50 emails/day). Please try again later or contact support to increase your limit.",
+        );
       }
     }
 
@@ -108,6 +132,7 @@ serve(async (req) => {
         to: toClean,
         subject: subjectClean,
         html,
+        ...(attachments ? { attachments } : {}),
       }),
     });
 

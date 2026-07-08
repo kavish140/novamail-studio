@@ -25,6 +25,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardLogsRouteImport } from './routes/dashboard.logs'
 import { Route as DashboardKeysRouteImport } from './routes/dashboard.keys'
 import { Route as DashboardDomainsRouteImport } from './routes/dashboard.domains'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -106,6 +107,11 @@ const DashboardDomainsRoute = DashboardDomainsRouteImport.update({
   path: '/domains',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/sdks': typeof SdksRoute
   '/signup': typeof SignupRoute
   '/dashboard/domains': typeof DashboardDomainsRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/sdks': typeof SdksRoute
   '/signup': typeof SignupRoute
   '/dashboard/domains': typeof DashboardDomainsRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/sdks': typeof SdksRoute
   '/signup': typeof SignupRoute
   '/dashboard/domains': typeof DashboardDomainsRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/keys': typeof DashboardKeysRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/sdks'
     | '/signup'
     | '/dashboard/domains'
+    | '/dashboard/admin'
     | '/dashboard/keys'
     | '/dashboard/logs'
     | '/dashboard/settings'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/sdks'
     | '/signup'
     | '/dashboard/domains'
+    | '/dashboard/admin'
     | '/dashboard/keys'
     | '/dashboard/logs'
     | '/dashboard/settings'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/sdks'
     | '/signup'
     | '/dashboard/domains'
+    | '/dashboard/admin'
     | '/dashboard/keys'
     | '/dashboard/logs'
     | '/dashboard/settings'
@@ -343,11 +355,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDomainsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
 interface DashboardRouteChildren {
   DashboardDomainsRoute: typeof DashboardDomainsRoute
+  DashboardAdminRoute: typeof DashboardAdminRoute
   DashboardKeysRoute: typeof DashboardKeysRoute
   DashboardLogsRoute: typeof DashboardLogsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
@@ -358,6 +378,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardDomainsRoute: DashboardDomainsRoute,
+  DashboardAdminRoute: DashboardAdminRoute,
   DashboardKeysRoute: DashboardKeysRoute,
   DashboardLogsRoute: DashboardLogsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,

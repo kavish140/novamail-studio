@@ -21,6 +21,7 @@ create table public.domains (
   region text not null default 'us-east',
   resend_domain_id text,
   records jsonb,
+  is_approved boolean not null default false,
   user_id uuid references auth.users(id) not null
 );
 

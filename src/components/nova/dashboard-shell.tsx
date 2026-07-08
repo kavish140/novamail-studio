@@ -11,7 +11,10 @@ import {
   BookOpen,
   FileText,
   Users,
+  ShieldCheck,
 } from "lucide-react";
+
+const ADMIN_EMAIL = "kavishganatra5@gmail.com";
 import { NovaLogo } from "./logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -83,6 +86,25 @@ export function DashboardShell() {
               </Link>
             );
           })}
+          {/* Admin-only link */}
+          {email === ADMIN_EMAIL && (
+            <>
+              <div className="my-2 border-t border-border/40" />
+              <Link
+                to="/dashboard/admin"
+                id="admin-nav-link"
+                className={cn(
+                  "mb-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                  pathname.startsWith("/dashboard/admin")
+                    ? "bg-primary/20 text-primary"
+                    : "text-primary/70 hover:bg-primary/10 hover:text-primary",
+                )}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Admin
+              </Link>
+            </>
+          )}
         </nav>
         <div className="m-3 rounded-xl border border-border/60 bg-surface-elevated p-4">
           <div className="text-xs text-muted-foreground">Monthly usage</div>
